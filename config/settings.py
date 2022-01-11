@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -125,3 +126,9 @@ try:
     from .local_settings import *
 except ImportError:
     print("No local settings to import.")
+
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+CF_USERNAME = os.environ.get("CF_USERNAME", "")
+CF_PASSWORD = os.environ.get("CF_PASSWORD", "")
+CF_ENDPOINT = os.environ.get("CF_ENDPOINT", "")
+CF_PROXY = os.environ.get("CF_PROXY", "")
