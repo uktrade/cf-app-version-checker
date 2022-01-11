@@ -2,6 +2,7 @@ from django.conf import settings
 
 from github import Github
 from cloudfoundry_client.client import CloudFoundryClient
+from datetime import datetime
 import yaml
 
 
@@ -78,12 +79,16 @@ def run_github(log):
         pipeline_environments=get_cf_app_environments(pipeline_config_repo, pipeline_file)
         log.info("Pipeline environments: {}".format(pipeline_environments))
 
-        # Read pipeline SCM repo default branch head commit.
+        # Read pipeline SCM repo default branch head commit and madification info
         pipeline_repo = g.get_repo(pipeline_config_scm)
         scm_default_branch=pipeline_repo.default_branch
         log.info("Pipeline default branch: {}".format(scm_default_branch))
         branch=pipeline_repo.get_branch(scm_default_branch)
-        log.info("Default branch HEAD commit: {}".format(branch.commit))
+        log.info("Default branch HEAD commit: {}".format(branch.commit.sha))
+        commit=pipeline_repo.get_commit(branch.commit.sha)
+        commit_date=datetime.strptime(commit.last_modified, '%a, %d %b %Y %H:%M:%S %Z')
+        log.info("Last modified: {}".format(commit_date))
+        log.info("Modified by: {}".format(commit.author.login))
 
         for i, environment_yaml in enumerate(pipeline_config_yaml["environments"]):
             pipeline_config_app=environment_yaml["app"]
