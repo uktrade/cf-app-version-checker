@@ -92,10 +92,13 @@ def run_github(log):
             commit_author="N/A"
         log.info("Modified by: {}".format(commit_author))
 
+        # Process each environment
         for i, environment_yaml in enumerate(pipeline_config_yaml["environments"]):
+            # Read the CF path from the pipeline yaml
             pipeline_config_app=environment_yaml["app"]
             log.info("CloudFoundry Path: {}".format(pipeline_config_app))
 
+            # Check CF application path has exactly 2 "/" characters - i.e. "org/spoace/app"
             if pipeline_config_app.count("/") != 2:
                 log.error("Invalid app path: {}!".format(pipeline_config_app))
                 continue
@@ -104,13 +107,15 @@ def run_github(log):
             app_space_guid = get_cf_space_guid(cf, app_org_guid, pipeline_config_app.split("/")[1])
             app_guid = get_cf_app_guid(cf, app_org_guid, app_space_guid, pipeline_config_app.split("/")[2])
 
+            # App GUID validation
             log.debug(app_guid)
             try:
                 log.debug(cf.v3.apps.get(app_guid))
             except:
                 log.error("Cannot read app with guid '{}'!".format(app_guid))
                 continue
-
+            
+            # Get app environment configuration
             cf_app_env=cf.v3.apps.get_env(application_guid=app_guid)
             try:
                 cf_app_scm_branch = cf_app_env["environment_variables"]["GIT_BRANCH"]
@@ -121,6 +126,7 @@ def run_github(log):
                 log.error("No SCM Branch or Commit Hash in app environmant!")
                 continue
 
+            # Get commit details of CF commit and calculate drift days
             cf_commit=pipeline_repo.get_commit(cf_app_scm_commit)
             cf_commit_date=datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
             log.info("Last modified: {}".format(cf_commit_date))
