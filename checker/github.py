@@ -76,7 +76,7 @@ def run_github(log):
         pipeline_environments=get_cf_app_environments(pipeline_config_repo, pipeline_file)
         log.info("Pipeline environments: {}".format(pipeline_environments))
 
-        # Read pipeline SCM repo default branch head commit and madification info
+        # Read pipeline SCM repo default branch head commit and modification info
         pipeline_repo = g.get_repo(pipeline_config_scm)
         scm_default_branch=pipeline_repo.default_branch
         log.info("Pipeline default branch: {}".format(scm_default_branch))
