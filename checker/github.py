@@ -119,6 +119,13 @@ def run_github(log):
                 log.error("No SCM Branch or Commit Hash in app environmant!")
                 continue
 
+            cf_commit=pipeline_repo.get_commit(cf_app_scm_commit)
+            cf_commit_date=datetime.strptime(cf_commit.last_modified, '%a, %d %b %Y %H:%M:%S %Z')
+            log.info("Last modified: {}".format(cf_commit_date))
+            log.info("Modified by: {}".format(cf_commit.author.login))
+            drift_time=cf_commit_date-commit_date
+            log.info("Drift: {} days".format(drift_time.days))
+
         log.info("DONE Processing pipeline file: {}".format(pipeline_file))
 
     exit()
