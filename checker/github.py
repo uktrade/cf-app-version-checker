@@ -118,6 +118,7 @@ def run_github(log):
                 log.info("SCM Commit: {}".format(cf_app_scm_commit))
             except:
                 log.error("No SCM Branch or Commit Hash in app environmant!")
+                continue
 
         log.info("DONE Processing pipeline file: {}".format(pipeline_file))
 
