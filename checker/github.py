@@ -88,7 +88,12 @@ def run_github(log):
         commit=pipeline_repo.get_commit(branch.commit.sha)
         commit_date=datetime.strptime(commit.last_modified, '%a, %d %b %Y %H:%M:%S %Z')
         log.info("Last modified: {}".format(commit_date))
-        log.info("Modified by: {}".format(commit.author.login))
+        try:
+            commit_author=commit.author.login
+        except:
+            log.warn("Commit author cannot be read")
+            commit_author="N/A"
+        log.info("Modified by: {}".format(commit_author))
 
         for i, environment_yaml in enumerate(pipeline_config_yaml["environments"]):
             pipeline_config_app=environment_yaml["app"]
