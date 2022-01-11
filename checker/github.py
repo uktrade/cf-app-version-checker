@@ -83,7 +83,7 @@ def run_github(log):
         branch=pipeline_repo.get_branch(scm_default_branch)
         log.info("Default branch HEAD commit: {}".format(branch.commit.sha))
         commit=pipeline_repo.get_commit(branch.commit.sha)
-        commit_date=datetime.strptime(commit.last_modified, '%a, %d %b %Y %H:%M:%S %Z')
+        commit_date=datetime.strptime(commit.last_modified, settings.GIT_DATE_FORMAT)
         log.info("Last modified: {}".format(commit_date))
         try:
             commit_author=commit.author.login
@@ -122,7 +122,7 @@ def run_github(log):
                 continue
 
             cf_commit=pipeline_repo.get_commit(cf_app_scm_commit)
-            cf_commit_date=datetime.strptime(cf_commit.last_modified, '%a, %d %b %Y %H:%M:%S %Z')
+            cf_commit_date=datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
             log.info("Last modified: {}".format(cf_commit_date))
             log.info("Modified by: {}".format(cf_commit.author.login))
             drift_time=cf_commit_date-commit_date
