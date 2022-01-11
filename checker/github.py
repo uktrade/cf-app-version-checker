@@ -50,9 +50,6 @@ def run_github(log):
     cf = CloudFoundryClient(target_endpoint, proxy=dict(http=settings.CF_PROXY, https=settings.CF_PROXY))
     cf.init_with_user_credentials(cf_username, cf_password)
 
-    # Initialise any other vars
-    git_cleanup_list=["git@github.com:","https://github.com/",".git"]
-
     # Read the pipeline configs
     log.info("Config Repo: {}".format(pipeline_config_repo.name))
     log.info("Default branch: {}".format(pipeline_config_repo.default_branch))
@@ -68,7 +65,7 @@ def run_github(log):
         pipeline_config_text = pipeline_config_repo.get_contents(pipeline_file).decoded_content.decode()
         pipeline_config_yaml = yaml.load(pipeline_config_text, Loader=yaml.FullLoader)
         pipeline_config_scm = pipeline_config_yaml["scm"]
-        for git_cleanup in git_cleanup_list:
+        for git_cleanup in settings.GIT_CLEANUP_LIST:
             pipeline_config_scm = pipeline_config_scm.replace(git_cleanup, "")
         log.info("Pipeline SCM: {}".format(pipeline_config_scm))
         if "uktrade" not in pipeline_config_scm:

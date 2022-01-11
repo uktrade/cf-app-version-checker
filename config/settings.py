@@ -132,3 +132,6 @@ CF_USERNAME = os.environ.get("CF_USERNAME", "")
 CF_PASSWORD = os.environ.get("CF_PASSWORD", "")
 CF_ENDPOINT = os.environ.get("CF_ENDPOINT", "")
 CF_PROXY = os.environ.get("CF_PROXY", "")
+
+# Other Constants
+GIT_CLEANUP_LIST=["git@github.com:","https://github.com/",".git"]
