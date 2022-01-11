@@ -121,12 +121,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Load local settings file, if it exists
 try:
-    print("Import local settings.")
     from .local_settings import *
 except ImportError:
     print("No local settings to import.")
 
+# Account credentials
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 CF_USERNAME = os.environ.get("CF_USERNAME", "")
 CF_PASSWORD = os.environ.get("CF_PASSWORD", "")
@@ -134,5 +135,5 @@ CF_ENDPOINT = os.environ.get("CF_ENDPOINT", "")
 CF_PROXY = os.environ.get("CF_PROXY", "")
 
 # Other Constants
-GIT_CLEANUP_LIST=["git@github.com:","https://github.com/",".git"]
+GIT_CLEANUP_LIST = ["git@github.com:","https://github.com/",".git"]
 GIT_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %Z"
