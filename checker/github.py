@@ -13,12 +13,6 @@ def get_pipeline_configs(repo):
     return yaml_file_list  
 
 
-def get_cf_app_name(repo, pipeline_yaml):
-    pipeline_config = repo.get_contents(pipeline_yaml).decoded_content.decode()
-    pipeline_config_yaml = yaml.load(pipeline_config, Loader=yaml.FullLoader)
-    return pipeline_config_yaml["name"]
-
-
 def get_cf_app_environments(repo, pipeline_yaml):
     environments=[]
     pipeline_config = repo.get_contents(pipeline_yaml).decoded_content.decode()
