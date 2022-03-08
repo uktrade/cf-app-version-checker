@@ -143,6 +143,12 @@ def run_github(log):
                 cf_commit_date=datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
                 log.info("Last modified: {}".format(cf_commit_date))
                 log.info("Modified by: {}".format(cf_commit.author.login))
+                cf_commits=pipeline_repo.get_commits(cf_app_scm_commit)
+                log.info("Branch commits: {}".format(cf_commits.totalCount))
+                cf_compare=pipeline_repo.compare(branch.commit.sha, cf_app_scm_commit)
+                log.info("Ahead by: {}".format(cf_compare.ahead_by))
+                log.info("Behind by: {}".format(cf_compare.behind_by))
+                log.info("Merge Base Commit: {}".format(cf_compare.merge_base_commit))
             except:
                 log.error("Cannot read commit {}!".format(cf_app_scm_commit))
                 continue
