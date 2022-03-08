@@ -82,7 +82,9 @@ def run_github(log):
         scm_default_branch=pipeline_repo.default_branch
         log.info("Pipeline default branch: {}".format(scm_default_branch))
         branch=pipeline_repo.get_branch(scm_default_branch)
-        log.info("Default branch HEAD commit: {}".format(branch.commit.sha))
+        log.info("Default branch ({}) HEAD commit: {}".format(scm_default_branch, branch.commit.sha))
+        commits=pipeline_repo.get_commits(scm_default_branch)
+        log.info("Default branch commits: {}".format(commits.totalCount))
         commit=pipeline_repo.get_commit(branch.commit.sha)
         commit_date=datetime.strptime(commit.last_modified, settings.GIT_DATE_FORMAT)
         log.info("Last modified: {}".format(commit_date))
