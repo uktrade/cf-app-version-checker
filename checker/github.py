@@ -106,12 +106,20 @@ def run_github(log):
                 log.error("Invalid app path: {}!".format(pipeline_config_app))
                 continue
 
+            # Read the org, spoace and app for this environment
+            log.info("Org: {}".format(pipeline_config_app.split("/")[0]))
             app_org_guid = get_cf_org_guid(cf, pipeline_config_app.split("/")[0])
+            log.info("Org Guid: {}".format(app_org_guid))
+
+            log.info("Space: {}".format(pipeline_config_app.split("/")[1]))
             app_space_guid = get_cf_space_guid(cf, app_org_guid, pipeline_config_app.split("/")[1])
+            log.info("Space Guid: {}".format(app_space_guid))
+
+            log.info("App: {}".format(pipeline_config_app.split("/")[2]))
             app_guid = get_cf_app_guid(cf, app_org_guid, app_space_guid, pipeline_config_app.split("/")[2])
+            log.info("App Guid: {}".format(app_guid))
 
             # App GUID validation
-            log.debug(app_guid)
             try:
                 log.debug(cf.v3.apps.get(app_guid))
             except:
