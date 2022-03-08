@@ -122,9 +122,9 @@ def run_github(log):
             cf_app_env=cf.v3.apps.get_env(application_guid=app_guid)
             try:
                 cf_app_scm_branch = cf_app_env["environment_variables"]["GIT_BRANCH"]
-                log.info("SCM Branch: {}".format(cf_app_scm_branch))
+                log.info("CF GIT_BRANCH: {}".format(cf_app_scm_branch))
                 cf_app_scm_commit = cf_app_env["environment_variables"]["GIT_COMMIT"]
-                log.info("SCM Commit: {}".format(cf_app_scm_commit))
+                log.info("CF GIT_COMMIT: {}".format(cf_app_scm_commit))
             except:
                 log.error("No SCM Branch or Commit Hash in app environmant!")
                 continue
