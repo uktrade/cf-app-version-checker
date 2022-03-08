@@ -51,6 +51,7 @@ def run_github(log):
     cf.init_with_user_credentials(cf_username, cf_password)
 
     # Read the pipeline configs
+    pipeline_config_repo = g.get_repo(settings.GIT_PIPELINE_REPO)
     log.info("Config Repo: {}".format(pipeline_config_repo.name))
     log.info("Default branch: {}".format(pipeline_config_repo.default_branch))
     pipeline_files=get_pipeline_configs(pipeline_config_repo)
