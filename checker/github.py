@@ -138,10 +138,14 @@ def run_github(log):
                 continue
 
             # Get commit details of CF commit and calculate drift days
-            cf_commit=pipeline_repo.get_commit(cf_app_scm_commit)
-            cf_commit_date=datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
-            log.info("Last modified: {}".format(cf_commit_date))
-            log.info("Modified by: {}".format(cf_commit.author.login))
+            try:
+                cf_commit=pipeline_repo.get_commit(cf_app_scm_commit)
+                cf_commit_date=datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
+                log.info("Last modified: {}".format(cf_commit_date))
+                log.info("Modified by: {}".format(cf_commit.author.login))
+            except:
+                log.error("Cannot read commit {}!".format(cf_app_scm_commit))
+                continue
             drift_time=cf_commit_date-commit_date
             log.info("Drift: {} days".format(drift_time.days))
 
