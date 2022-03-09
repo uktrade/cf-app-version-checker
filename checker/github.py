@@ -134,7 +134,7 @@ def run_github(log):
             try:
                 log.debug(cf.v3.apps.get(app_guid))
             except:
-                log.error("Cannot read app with guid '{}'!".format(app_guid))
+                log.error("Cannot read app '{}' with guid '{}'!".format(pipeline_config_app.split("/")[2], app_guid))
                 continue
             
             # Get app environment configuration
