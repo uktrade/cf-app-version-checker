@@ -90,8 +90,11 @@ def run_github(log):
         log.info("Last modified: {}".format(commit_date))
         try:
             commit_author=commit.author.login
-        except:
+        except AttributeError:
             log.warn("Commit author cannot be read")
+            commit_author="N/A"
+        except Exception as ex:
+            log.warn("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
             commit_author="N/A"
         log.info("Modified by: {}".format(commit_author))
 
