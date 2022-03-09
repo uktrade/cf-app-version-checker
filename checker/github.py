@@ -88,6 +88,8 @@ def run_github(log):
         commit=pipeline_repo.get_commit(branch.commit.sha)
         commit_date=datetime.strptime(commit.last_modified, settings.GIT_DATE_FORMAT)
         log.info("Last modified: {}".format(commit_date))
+        log.info("Author: {}".format(commit.author))
+        log.info("Committer: {}".format(commit.committer))
         try:
             commit_author=commit.author.login
         except AttributeError:
