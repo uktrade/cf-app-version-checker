@@ -79,15 +79,10 @@ def run_github(log):
         log.info("Scan job started: {}".format(scan_start_time))
         log.info("Repo scan started: {}".format(repo_scan_start_time))
 
-        # Read pipeline SCM details
-        pipeline_config_text = pipeline_config_repo.get_contents(pipeline_file).decoded_content.decode()
-        pipeline_config_yaml = yaml.load(pipeline_config_text, Loader=yaml.FullLoader)
-        pipeline_config_scm = pipeline_config_yaml["scm"]
-        for git_cleanup in settings.GIT_CLEANUP_LIST:
-            pipeline_config_scm = pipeline_config_scm.replace(git_cleanup, "")
-        log.info("Pipeline SCM: {}".format(pipeline_config_scm))
-        if "uktrade" not in pipeline_config_scm:
-            log.warning("Not a UKTRADE repo")
+        pipeline_app.config = get_app_config_yaml(pipeline_config_repo, pipeline_file)
+        log.info("Pipeline SCM: {}".format(pipeline_app.config["scm"]))
+        if "uktrade" not in pipeline_app.config["scm"]:
+            log.warning("Not a UKTRADE repo: {}".format(pipeline_app.config["scm"]))
             continue
         
         # Read pipeline environments
