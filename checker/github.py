@@ -38,6 +38,15 @@ def get_cf_app_guid(cf, org_guid, space_guid, app_name):
         return cf_apps['guid']
 
 
+def get_app_config_yaml(repo, config_file):
+    config_text = repo.get_contents(config_file).decoded_content.decode()
+    config_yaml = yaml.load(config_text, Loader=yaml.FullLoader)
+    for git_cleanup in settings.GIT_CLEANUP_LIST:
+        config_yaml["scm"] = config_yaml["scm"].replace(git_cleanup, "")
+    return config_yaml
+
+
+@dataclass
 def run_github(log):
 
     scan_start_time=datetime.now()
