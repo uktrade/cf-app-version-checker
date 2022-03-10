@@ -37,7 +37,7 @@ def get_app_config_yaml(repo, config_file):
     return config_yaml
 
 
-def get_config_environments(config_yaml):
+def get_config_environment_names(config_yaml):
     environments=[]
     for environment_yaml in config_yaml["environments"]:
         environments.append(environment_yaml["environment"])
@@ -84,7 +84,7 @@ def run_github(log):
             continue
         
         # Read pipeline environments
-        log.info("Pipeline environments: {}".format(get_config_environments(pipeline_app.config)))
+        log.info("Pipeline environments: {}".format(get_config_environment_names(pipeline_app.config)))
 
         # Read pipeline SCM repo default branch head commit and modification info
         pipeline_repo = g.get_repo(pipeline_app.config["scm"])
