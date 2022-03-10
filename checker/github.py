@@ -4,6 +4,7 @@ from github import Github
 from cloudfoundry_client.client import CloudFoundryClient
 from datetime import datetime
 import yaml
+from dataclasses import dataclass
 
 
 def get_pipeline_configs(repo):
