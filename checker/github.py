@@ -177,28 +177,28 @@ def run_github(log):
             # Get app environment configuration
             cf_app_env=cf.v3.apps.get_env(application_guid=pipeline_app.cf_app_guid)
             try:
-                cf_app_scm_branch = cf_app_env["environment_variables"]["GIT_BRANCH"]
-                log.info("CF GIT_BRANCH: {}".format(cf_app_scm_branch))
-                cf_app_scm_commit = cf_app_env["environment_variables"]["GIT_COMMIT"]
-                log.info("CF GIT_COMMIT: {}".format(cf_app_scm_commit))
+                pipeline_app.cf_app_git_branch = cf_app_env["environment_variables"]["GIT_BRANCH"]
+                log.info("CF GIT_BRANCH: {}".format(pipeline_app.cf_app_git_branch))
+                pipeline_app.cf_app_git_commit = cf_app_env["environment_variables"]["GIT_COMMIT"]
+                log.info("CF GIT_COMMIT: {}".format(pipeline_app.cf_app_git_commit))
             except:
                 log.error("No SCM Branch or Commit Hash in app environmant!")
                 continue
 
             # Get commit details of CF commit and calculate drift days
             try:
-                cf_commit=pipeline_repo.get_commit(cf_app_scm_commit)
+                cf_commit=pipeline_repo.get_commit(pipeline_app.cf_app_git_commit)
                 cf_commit_date=datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
                 log.info("Last modified: {}".format(cf_commit_date))
                 log.info("Modified by: {}".format(cf_commit.author.login))
-                cf_commits=pipeline_repo.get_commits(cf_app_scm_commit)
+                cf_commits=pipeline_repo.get_commits(pipeline_app.cf_app_git_commit)
                 log.info("Branch commits: {}".format(cf_commits.totalCount))
-                cf_compare=pipeline_repo.compare(pipeline_repo_default_branch.commit.sha, cf_app_scm_commit)
+                cf_compare=pipeline_repo.compare(pipeline_repo_default_branch.commit.sha, pipeline_app.cf_app_git_commit)
                 log.info("Ahead by: {}".format(cf_compare.ahead_by))
                 log.info("Behind by: {}".format(cf_compare.behind_by))
                 log.info("Merge Base Commit: {}".format(cf_compare.merge_base_commit))
             except:
-                log.error("Cannot read commit {}!".format(cf_app_scm_commit))
+                log.error("Cannot read commit {}!".format(pipeline_app.cf_app_git_commit))
                 continue
             drift_time=cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
             log.info("Drift: {} days".format(drift_time.days))
