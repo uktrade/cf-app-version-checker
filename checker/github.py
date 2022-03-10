@@ -137,8 +137,8 @@ def run_github(log):
         # Process each environment
         for environment_yaml in pipeline_app.config["environments"]:
             # Read the CF path from the pipeline yaml
-            pipeline_config_app=environment_yaml["app"]
-            log.info("CloudFoundry Path: {}".format(pipeline_config_app))
+            pipeline_app.cf_full_name = environment_yaml["app"]
+            log.info("CloudFoundry Path: {}".format(pipeline_app.cf_full_name))
 
             pipeline_config_app_type=environment_yaml["type"]
             log.info("App Type: {}".format(pipeline_config_app_type))
@@ -147,28 +147,28 @@ def run_github(log):
                 continue
 
             # Check CF application path has exactly 2 "/" characters - i.e. "org/spoace/app"
-            if pipeline_config_app.count("/") != 2:
-                log.error("Invalid app path: {}!".format(pipeline_config_app))
+            if pipeline_app.cf_full_name.count("/") != 2:
+                log.error("Invalid app path: {}!".format(pipeline_app.cf_full_name))
                 continue
 
             # Read the org, spoace and app for this environment
-            log.info("Org: {}".format(pipeline_config_app.split("/")[0]))
-            app_org_guid = get_cf_org_guid(cf, pipeline_config_app.split("/")[0])
+            log.info("Org: {}".format(pipeline_app.cf_full_name.split("/")[0]))
+            app_org_guid = get_cf_org_guid(cf, pipeline_app.cf_full_name.split("/")[0])
             log.info("Org Guid: {}".format(app_org_guid))
 
-            log.info("Space: {}".format(pipeline_config_app.split("/")[1]))
-            app_space_guid = get_cf_space_guid(cf, app_org_guid, pipeline_config_app.split("/")[1])
+            log.info("Space: {}".format(pipeline_app.cf_full_name.split("/")[1]))
+            app_space_guid = get_cf_space_guid(cf, app_org_guid, pipeline_app.cf_full_name.split("/")[1])
             log.info("Space Guid: {}".format(app_space_guid))
 
-            log.info("App: {}".format(pipeline_config_app.split("/")[2]))
-            app_guid = get_cf_app_guid(cf, app_org_guid, app_space_guid, pipeline_config_app.split("/")[2])
+            log.info("App: {}".format(pipeline_app.cf_full_name.split("/")[2]))
+            app_guid = get_cf_app_guid(cf, app_org_guid, app_space_guid, pipeline_app.cf_full_name.split("/")[2])
             log.info("App Guid: {}".format(app_guid))
 
             # App GUID validation
             try:
                 log.debug(cf.v3.apps.get(app_guid))
             except:
-                log.error("Cannot read app '{}' with guid '{}'!".format(pipeline_config_app.split("/")[2], app_guid))
+                log.error("Cannot read app '{}' with guid '{}'!".format(pipeline_app.cf_full_name.split("/")[2], app_guid))
                 continue
             
             # Get app environment configuration
@@ -190,14 +190,14 @@ def run_github(log):
                 log.info("Modified by: {}".format(cf_commit.author.login))
                 cf_commits=pipeline_repo.get_commits(cf_app_scm_commit)
                 log.info("Branch commits: {}".format(cf_commits.totalCount))
-                cf_compare=pipeline_repo.compare(branch.commit.sha, cf_app_scm_commit)
+                cf_compare=pipeline_repo.compare(pipeline_repo_default_branch.commit.sha, cf_app_scm_commit)
                 log.info("Ahead by: {}".format(cf_compare.ahead_by))
                 log.info("Behind by: {}".format(cf_compare.behind_by))
                 log.info("Merge Base Commit: {}".format(cf_compare.merge_base_commit))
             except:
                 log.error("Cannot read commit {}!".format(cf_app_scm_commit))
                 continue
-            drift_time=cf_commit_date-commit_date
+            drift_time=cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
             log.info("Drift: {} days".format(drift_time.days))
 
         log.info("DONE Processing pipeline file: {}".format(pipeline_file))
