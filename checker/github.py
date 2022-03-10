@@ -47,6 +47,9 @@ def get_app_config_yaml(repo, config_file):
 
 
 @dataclass
+class PipelineApp:
+    config_filename: str
+    config: str = None
 def run_github(log):
 
     scan_start_time=datetime.now()
