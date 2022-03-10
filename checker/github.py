@@ -40,6 +40,8 @@ def get_cf_app_guid(cf, org_guid, space_guid, app_name):
 
 def run_github(log):
 
+    scan_start_time=datetime.now()
+
     # Initialise Github object
     g = Github(settings.GITHUB_TOKEN)
 
@@ -60,7 +62,10 @@ def run_github(log):
     # Process pipelines
     for pipeline_file in pipeline_files:
 
+        repo_scan_start_time=datetime.now()
         log.info("START Processing pipeline file: {}".format(pipeline_file))
+        log.info("Scan job started: {}".format(scan_start_time))
+        log.info("Repo scan started: {}".format(repo_scan_start_time))
 
         # Read pipeline SCM details
         pipeline_config_text = pipeline_config_repo.get_contents(pipeline_file).decoded_content.decode()
