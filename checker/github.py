@@ -87,7 +87,7 @@ def run_github(log):
         # Read pipeline environments
         log.info("Pipeline environments: {}".format(get_config_environment_names(pipeline_app.config)))
 
-        # Read pipeline SCM repo default branch head commit and modification info
+        # Read pipeline app SCM repo
         pipeline_repo = g.get_repo(pipeline_app.config["scm"])
         pipeline_app.scm_repo_name = pipeline_repo.name
         log.info("Repo Name: {}".format(pipeline_app.scm_repo_name))
@@ -114,20 +114,25 @@ def run_github(log):
         pipeline_repo_default_branch_head_commit=pipeline_repo.get_commit(pipeline_app.scm_repo_default_branch_head_commit_sha)
         pipeline_app.scm_repo_default_branch_head_commit_date = datetime.strptime(pipeline_repo_default_branch_head_commit.last_modified, settings.GIT_DATE_FORMAT)
         log.info("Last modified: {}".format(pipeline_app.scm_repo_default_branch_head_commit_date))
-        pipeline_app.scm_repo_default_branch_head_commit_author = pipeline_repo_default_branch_head_commit.author
-        log.info("Author: {}".format(pipeline_app.scm_repo_default_branch_head_commit_author))
-        pipeline_app.scm_repo_default_branch_head_commit_committer = pipeline_repo_default_branch_head_commit.committer
-        log.info("Committer: {}".format(pipeline_app.scm_repo_default_branch_head_commit_committer))
-
         try:
-            commit_author=commit.author.login
+            pipeline_app.scm_repo_default_branch_head_commit_author = pipeline_repo_default_branch_head_commit.author.login
         except AttributeError:
-            log.warn("Commit author cannot be read")
-            commit_author="N/A"
+            log.warn("Author cannot be read")
+            pipeline_app.scm_repo_default_branch_head_commit_author="N/A"
         except Exception as ex:
             log.warn("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
-            commit_author="N/A"
-        log.info("Modified by: {}".format(commit_author))
+            pipeline_app.scm_repo_default_branch_head_commit_author="N/A"
+        log.info("Author: {}".format(pipeline_app.scm_repo_default_branch_head_commit_author))
+        try:
+            pipeline_app.scm_repo_default_branch_head_commit_committer = pipeline_repo_default_branch_head_commit.committer.login
+        except AttributeError:
+            log.warn("Author cannot be read")
+            pipeline_app.scm_repo_default_branch_head_commit_committer="N/A"
+        except Exception as ex:
+            log.warn("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
+            pipeline_app.scm_repo_default_branch_head_commit_committer="N/A"
+        log.info("Committer: {}".format(pipeline_app.scm_repo_default_branch_head_commit_committer))
+
 
         # Process each environment
         for environment_yaml in pipeline_app.config["environments"]:
