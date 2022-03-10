@@ -140,10 +140,10 @@ def run_github(log):
             pipeline_app.cf_full_name = environment_yaml["app"]
             log.info("CloudFoundry Path: {}".format(pipeline_app.cf_full_name))
 
-            pipeline_config_app_type=environment_yaml["type"]
-            log.info("App Type: {}".format(pipeline_config_app_type))
-            if pipeline_config_app_type != "gds":
-                log.warning("App type is '{}'. Only processing 'gds' type apps here.".format(pipeline_config_app_type))
+            pipeline_app.cf_app_type = environment_yaml["type"]
+            log.info("App Type: {}".format(pipeline_app.cf_app_type))
+            if pipeline_app.cf_app_type != "gds":
+                log.warning("App type is '{}'. Only processing 'gds' type apps here.".format(pipeline_app.cf_app_type))
                 continue
 
             # Check CF application path has exactly 2 "/" characters - i.e. "org/spoace/app"
