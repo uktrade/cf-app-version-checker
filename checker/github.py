@@ -14,15 +14,6 @@ def get_pipeline_configs(repo):
     return yaml_file_list  
 
 
-def get_cf_app_environments(repo, pipeline_yaml):
-    environments=[]
-    pipeline_config = repo.get_contents(pipeline_yaml).decoded_content.decode()
-    pipeline_config_yaml = yaml.load(pipeline_config, Loader=yaml.FullLoader)
-    for i, environment_yaml in enumerate(pipeline_config_yaml["environments"]):
-        environments.append(environment_yaml["environment"])
-    return environments
-
-
 def get_cf_org_guid(cf, org_name):
     for cf_orgs in cf.v3.organizations.list(names=org_name):
         return cf_orgs['guid']
@@ -44,6 +35,13 @@ def get_app_config_yaml(repo, config_file):
     for git_cleanup in settings.GIT_CLEANUP_LIST:
         config_yaml["scm"] = config_yaml["scm"].replace(git_cleanup, "")
     return config_yaml
+
+
+def get_config_environments(config_yaml):
+    environments=[]
+    for environment_yaml in config_yaml["environments"]:
+        environments.append(environment_yaml["environment"])
+    return environments
 
 
 @dataclass
@@ -86,8 +84,7 @@ def run_github(log):
             continue
         
         # Read pipeline environments
-        pipeline_environments=get_cf_app_environments(pipeline_config_repo, pipeline_file)
-        log.info("Pipeline environments: {}".format(pipeline_environments))
+        log.info("Pipeline environments: {}".format(get_config_environments(pipeline_app.config)))
 
         # Read pipeline SCM repo default branch head commit and modification info
         pipeline_repo = g.get_repo(pipeline_app.config["scm"])
@@ -118,7 +115,7 @@ def run_github(log):
         log.info("Modified by: {}".format(commit_author))
 
         # Process each environment
-        for i, environment_yaml in enumerate(pipeline_app.config["environments"]):
+        for environment_yaml in pipeline_app.config["environments"]:
             # Read the CF path from the pipeline yaml
             pipeline_config_app=environment_yaml["app"]
             log.info("CloudFoundry Path: {}".format(pipeline_config_app))
