@@ -152,27 +152,30 @@ def run_github(log):
                 continue
 
             # Read the org, spoace and app for this environment
-            log.info("Org: {}".format(pipeline_app.cf_full_name.split("/")[0]))
-            app_org_guid = get_cf_org_guid(cf, pipeline_app.cf_full_name.split("/")[0])
-            log.info("Org Guid: {}".format(app_org_guid))
+            pipeline_app.cf_org_name = pipeline_app.cf_full_name.split("/")[0]
+            log.info("Org: {}".format(pipeline_app.cf_org_name))
+            pipeline_app.cf_org_guid = get_cf_org_guid(cf, pipeline_app.cf_org_name)
+            log.info("Org Guid: {}".format(pipeline_app.cf_org_guid))
 
-            log.info("Space: {}".format(pipeline_app.cf_full_name.split("/")[1]))
-            app_space_guid = get_cf_space_guid(cf, app_org_guid, pipeline_app.cf_full_name.split("/")[1])
-            log.info("Space Guid: {}".format(app_space_guid))
+            pipeline_app.cf_space_name = pipeline_app.cf_full_name.split("/")[1]
+            log.info("Space: {}".format(pipeline_app.cf_space_name))
+            pipeline_app.cf_space_guid = get_cf_space_guid(cf, pipeline_app.cf_org_guid, pipeline_app.cf_space_name)
+            log.info("Space Guid: {}".format(pipeline_app.cf_space_guid))
 
-            log.info("App: {}".format(pipeline_app.cf_full_name.split("/")[2]))
-            app_guid = get_cf_app_guid(cf, app_org_guid, app_space_guid, pipeline_app.cf_full_name.split("/")[2])
-            log.info("App Guid: {}".format(app_guid))
+            pipeline_app.cf_app_name = pipeline_app.cf_full_name.split("/")[2]
+            log.info("App: {}".format(pipeline_app.cf_app_name))
+            pipeline_app.cf_app_guid = get_cf_app_guid(cf, pipeline_app.cf_org_guid, pipeline_app.cf_space_guid, pipeline_app.cf_app_name)
+            log.info("App Guid: {}".format(pipeline_app.cf_app_guid))
 
             # App GUID validation
             try:
-                log.debug(cf.v3.apps.get(app_guid))
+                log.debug(cf.v3.apps.get(pipeline_app.cf_app_guid))
             except:
-                log.error("Cannot read app '{}' with guid '{}'!".format(pipeline_app.cf_full_name.split("/")[2], app_guid))
+                log.error("Cannot read app '{}' with guid '{}'!".format(pipeline_app.cf_app_name, pipeline_app.cf_app_guid))
                 continue
             
             # Get app environment configuration
-            cf_app_env=cf.v3.apps.get_env(application_guid=app_guid)
+            cf_app_env=cf.v3.apps.get_env(application_guid=pipeline_app.cf_app_guid)
             try:
                 cf_app_scm_branch = cf_app_env["environment_variables"]["GIT_BRANCH"]
                 log.info("CF GIT_BRANCH: {}".format(cf_app_scm_branch))
