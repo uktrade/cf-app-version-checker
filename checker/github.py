@@ -97,17 +97,28 @@ def run_github(log):
         log.info("Repo Private: {}".format(pipeline_app.scm_repo_private))
         pipeline_app.scm_repo_archived = pipeline_repo.archived
         log.info("Repo archived: {}".format(pipeline_repo.archived))
+        pipeline_app.scm_repo_default_branch_name = pipeline_repo.default_branch
+        log.info("Repo default branch: {}".format(pipeline_app.scm_repo_default_branch_name))
 
-        log.info("Pipeline default branch: {}".format(pipeline_repo.default_branch))
-        branch=pipeline_repo.get_branch(pipeline_repo.default_branch)
-        log.info("Default branch ({}) HEAD commit: {}".format(pipeline_repo.default_branch, branch.commit.sha))
-        commits=pipeline_repo.get_commits(pipeline_repo.default_branch)
-        log.info("Default branch commits: {}".format(commits.totalCount))
-        commit=pipeline_repo.get_commit(branch.commit.sha)
-        commit_date=datetime.strptime(commit.last_modified, settings.GIT_DATE_FORMAT)
-        log.info("Last modified: {}".format(commit_date))
-        log.info("Author: {}".format(commit.author))
-        log.info("Committer: {}".format(commit.committer))
+        # Read pipeline app SCM repo default branch
+        pipeline_repo_default_branch=pipeline_repo.get_branch(pipeline_app.scm_repo_default_branch_name)
+        pipeline_app.scm_repo_default_branch_head_commit_sha = pipeline_repo_default_branch.commit.sha
+        log.info("HEAD commit sha: {}".format(pipeline_app.scm_repo_default_branch_head_commit_sha))
+        
+        # Read pipeline app SCM repo default branch commits
+        pipeline_repo_default_branch_commits=pipeline_repo.get_commits(pipeline_app.scm_repo_default_branch_name)
+        pipeline_app.scm_repo_default_branch_head_commit_count = pipeline_repo_default_branch_commits.totalCount
+        log.info("Default branch commit count: {}".format(pipeline_app.scm_repo_default_branch_head_commit_count))
+
+        # Read pipeline app SCM repo default branch head commit
+        pipeline_repo_default_branch_head_commit=pipeline_repo.get_commit(pipeline_app.scm_repo_default_branch_head_commit_sha)
+        pipeline_app.scm_repo_default_branch_head_commit_date = datetime.strptime(pipeline_repo_default_branch_head_commit.last_modified, settings.GIT_DATE_FORMAT)
+        log.info("Last modified: {}".format(pipeline_app.scm_repo_default_branch_head_commit_date))
+        pipeline_app.scm_repo_default_branch_head_commit_author = pipeline_repo_default_branch_head_commit.author
+        log.info("Author: {}".format(pipeline_app.scm_repo_default_branch_head_commit_author))
+        pipeline_app.scm_repo_default_branch_head_commit_committer = pipeline_repo_default_branch_head_commit.committer
+        log.info("Committer: {}".format(pipeline_app.scm_repo_default_branch_head_commit_committer))
+
         try:
             commit_author=commit.author.login
         except AttributeError:
