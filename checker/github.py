@@ -88,9 +88,13 @@ def run_github(log):
 
         # Read pipeline SCM repo default branch head commit and modification info
         pipeline_repo = g.get_repo(pipeline_app.config["scm"])
-        log.info("Repo Name: {}".format(pipeline_repo.name))
-        log.info("Repo ID: {}".format(pipeline_repo.id))
-        log.info("Repo Private: {}".format(pipeline_repo.private))
+        pipeline_app.scm_repo_name = pipeline_repo.name
+        log.info("Repo Name: {}".format(pipeline_app.scm_repo_name))
+        pipeline_app.scm_repo_id = pipeline_repo.id
+        log.info("Repo ID: {}".format(pipeline_app.scm_repo_id))
+        pipeline_app.scm_repo_private = pipeline_repo.private
+        log.info("Repo Private: {}".format(pipeline_app.scm_repo_private))
+        pipeline_app.scm_repo_archived = pipeline_repo.archived
         log.info("Repo archived: {}".format(pipeline_repo.archived))
 
         log.info("Pipeline default branch: {}".format(pipeline_repo.default_branch))
