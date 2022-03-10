@@ -90,7 +90,7 @@ def run_github(log):
         log.info("Pipeline environments: {}".format(pipeline_environments))
 
         # Read pipeline SCM repo default branch head commit and modification info
-        pipeline_repo = g.get_repo(pipeline_config_scm)
+        pipeline_repo = g.get_repo(pipeline_app.config["scm"])
         log.info("Repo Name: {}".format(pipeline_repo.name))
         log.info("Repo ID: {}".format(pipeline_repo.id))
         log.info("Repo Private: {}".format(pipeline_repo.private))
@@ -118,7 +118,7 @@ def run_github(log):
         log.info("Modified by: {}".format(commit_author))
 
         # Process each environment
-        for i, environment_yaml in enumerate(pipeline_config_yaml["environments"]):
+        for i, environment_yaml in enumerate(pipeline_app.config["environments"]):
             # Read the CF path from the pipeline yaml
             pipeline_config_app=environment_yaml["app"]
             log.info("CloudFoundry Path: {}".format(pipeline_config_app))
