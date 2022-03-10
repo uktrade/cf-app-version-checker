@@ -188,11 +188,13 @@ def run_github(log):
             # Get commit details of CF commit and calculate drift days
             try:
                 cf_commit=pipeline_repo.get_commit(pipeline_app.cf_app_git_commit)
-                cf_commit_date=datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
-                log.info("Last modified: {}".format(cf_commit_date))
-                log.info("Modified by: {}".format(cf_commit.author.login))
-                cf_commits=pipeline_repo.get_commits(pipeline_app.cf_app_git_commit)
-                log.info("Branch commits: {}".format(cf_commits.totalCount))
+                pipeline_app.cf_commit_date = datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
+                log.info("Last modified: {}".format(pipeline_app.cf_commit_date))
+                pipeline_app.cf_commit_author = cf_commit.author.login
+                log.info("Modified by: {}".format(pipeline_app.cf_commit_author))
+                pipeline_app.cf_commit_count = pipeline_repo.get_commits(pipeline_app.cf_app_git_commit)
+                log.info("Branch commits: {}".format(pipeline_app.cf_commit_count))
+
                 cf_compare=pipeline_repo.compare(pipeline_repo_default_branch.commit.sha, pipeline_app.cf_app_git_commit)
                 log.info("Ahead by: {}".format(cf_compare.ahead_by))
                 log.info("Behind by: {}".format(cf_compare.behind_by))
@@ -200,7 +202,7 @@ def run_github(log):
             except:
                 log.error("Cannot read commit {}!".format(pipeline_app.cf_app_git_commit))
                 continue
-            drift_time=cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
+            drift_time=pipeline_app.cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
             log.info("Drift: {} days".format(drift_time.days))
 
         log.info("DONE Processing pipeline file: {}".format(pipeline_file))
