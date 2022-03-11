@@ -198,17 +198,19 @@ def run_github(log):
                 pipeline_app.drift_time_simple = pipeline_app.cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
                 log.info("Drift (simple): {} days".format(pipeline_app.drift_time_simple.days))
 
-                # Base merge drift days - between head commit date and date of last common ancestor (head and cf)
+                # Calculate merge-base drift days - between default branch head commit date and date of last common ancestor (head and cf)
                 cf_compare=pipeline_repo.compare(pipeline_repo_default_branch.commit.sha, pipeline_app.cf_app_git_commit)
-                log.info("Merge Base Commit: {}".format(cf_compare.merge_base_commit))
-                log.info("Ahead by: {}".format(cf_compare.ahead_by))
-                log.info("Behind by: {}".format(cf_compare.behind_by))
-                cf_compare_base_merge=pipeline_repo.get_commit(cf_compare.merge_base_commit.sha)
-                cf_compare_base_merge_date=datetime.strptime(cf_compare_base_merge.last_modified, settings.GIT_DATE_FORMAT)
-                log.info("Merge Base Commit Date: {}".format(cf_compare_base_merge_date))
-
-                drift_time_v2=cf_compare_base_merge_date-pipeline_app.scm_repo_default_branch_head_commit_date
-                log.info("Drift v2: {} days".format(drift_time_v2.days))
+                pipeline_app.git_compare_ahead_by = cf_compare.ahead_by
+                log.info("Ahead by: {}".format(pipeline_app.git_compare_ahead_by))
+                pipeline_app.git_compare_behind_by = cf_compare.behind_by
+                log.info("Behind by: {}".format(pipeline_app.git_compare_behind_by))
+                pipeline_app.git_compare_merge_base_commit = cf_compare.merge_base_commit.sha
+                log.info("Merge-base Commit: {}".format(pipeline_app.git_compare_merge_base_commit))
+                merge_base_commit=pipeline_repo.get_commit(pipeline_app.git_compare_merge_base_commit)
+                pipeline_app.git_compare_merge_base_commit_date=datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT)
+                log.info("Merge-base Commit Date: {}".format(pipeline_app.git_compare_merge_base_commit_date))
+                pipeline_app.drift_time_merge_base=pipeline_app.git_compare_merge_base_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
+                log.info("Drift (from merge-base)): {} days".format(pipeline_app.drift_time_merge_base.days))
             except:
                 log.error("Cannot read commit {}!".format(pipeline_app.cf_app_git_commit))
                 continue
