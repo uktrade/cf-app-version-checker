@@ -187,16 +187,16 @@ def run_github(log):
 
             # Get commit details of CF commit and calculate drift days
             try:
-                # Simple drift days - between head commit date and CF commit date
+                # Calculate "simple" drift days - between head commit date and CF commit date
                 cf_commit=pipeline_repo.get_commit(pipeline_app.cf_app_git_commit)
                 pipeline_app.cf_commit_date = datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
                 log.info("Last modified: {}".format(pipeline_app.cf_commit_date))
                 pipeline_app.cf_commit_author = cf_commit.author.login
                 log.info("Modified by: {}".format(pipeline_app.cf_commit_author))
-                pipeline_app.cf_commit_count = pipeline_repo.get_commits(pipeline_app.cf_app_git_commit)
+                pipeline_app.cf_commit_count = pipeline_repo.get_commits(pipeline_app.cf_app_git_commit).totalCount
                 log.info("Branch commits: {}".format(pipeline_app.cf_commit_count))
-                drift_time=pipeline_app.cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
-                log.info("Drift: {} days".format(drift_time.days))
+                pipeline_app.drift_time_simple = pipeline_app.cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
+                log.info("Drift (simple): {} days".format(pipeline_app.drift_time_simple.days))
 
                 # Base merge drift days - between head commit date and date of last common ancestor (head and cf)
                 cf_compare=pipeline_repo.compare(pipeline_repo_default_branch.commit.sha, pipeline_app.cf_app_git_commit)
