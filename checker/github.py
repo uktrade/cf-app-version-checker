@@ -96,7 +96,7 @@ def run_github(log):
         pipeline_app.scm_repo_private = pipeline_repo.private
         log.info("Repo Private: {}".format(pipeline_app.scm_repo_private))
         pipeline_app.scm_repo_archived = pipeline_repo.archived
-        log.info("Repo archived: {}".format(pipeline_repo.archived))
+        log.info("Repo archived: {}".format(pipeline_app.scm_repo_archived))
         pipeline_app.scm_repo_default_branch_name = pipeline_repo.default_branch
         log.info("Repo default branch: {}".format(pipeline_app.scm_repo_default_branch_name))
 
