@@ -49,6 +49,37 @@ def get_config_environment_names(config_yaml):
 class PipelineApp:
     config_filename: str
     config: str = None
+    scm_repo_name: str = None
+    scm_repo_id: str = None
+    scm_repo_private: str = None
+    scm_repo_archived: str = None
+    scm_repo_default_branch_name: str = None
+    scm_repo_default_branch_head_commit_sha: str = None
+    scm_repo_default_branch_head_commit_count: str = None
+    scm_repo_default_branch_head_commit_date: str = None
+    scm_repo_default_branch_head_commit_author: str = None
+    scm_repo_default_branch_head_commit_committer: str = None
+    cf_full_name: str = None
+    cf_app_type: str = None
+    cf_org_name: str = None
+    cf_org_guid: str = None
+    cf_space_name: str = None
+    cf_space_guid: str = None
+    cf_app_name: str = None
+    cf_app_guid: str = None
+    cf_app_git_branch: str = None
+    cf_app_git_commit: str = None
+    cf_commit_date: str = None
+    cf_commit_author: str = None
+    cf_commit_count: str = None
+    drift_time_simple: str = None
+    git_compare_ahead_by: str = None
+    git_compare_behind_by: str = None
+    git_compare_merge_base_commit: str = None
+    git_compare_merge_base_commit_date: str = None
+    drift_time_merge_base: str = None
+
+
 def run_github(log):
 
     scan_start_time=datetime.now()
