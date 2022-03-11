@@ -133,7 +133,13 @@ def run_github(log):
         pipeline_app.config = get_app_config_yaml(pipeline_config_repo, pipeline_app.config_filename)
         log.info("Pipeline SCM: {}".format(pipeline_app.config["scm"]))
         if "uktrade" not in pipeline_app.config["scm"]:
-            log.warning("Not a UKTRADE repo: {}".format(pipeline_app.config["scm"]))
+            pipeline_env = PipelineEnv()
+            pipeline_env.log_message="Not a UKTRADE repo: {}".format(pipeline_app.config["scm"])
+            log.error(pipeline_env.log_message)
+            write_csv("a",
+                [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
+                [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+            )
             continue
         
         # Read pipeline environments
@@ -195,7 +201,12 @@ def run_github(log):
             pipeline_env.cf_app_type = environment_yaml["type"]
             log.info("App Type: {}".format(pipeline_env.cf_app_type))
             if pipeline_env.cf_app_type != "gds":
-                log.warning("App type is '{}'. Only processing 'gds' type apps here.".format(pipeline_env.cf_app_type))
+                pipeline_env.log_message="App type is '{}'. Only processing 'gds' type apps here.".format(pipeline_env.cf_app_type)
+                log.warning(pipeline_env.log_message)
+                write_csv("a",
+                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
+                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                )
                 continue
 
             # Read the CF path from the pipeline yaml
@@ -204,7 +215,12 @@ def run_github(log):
 
             # Check CF application path has exactly 2 "/" characters - i.e. "org/spoace/app"
             if pipeline_env.cf_full_name.count("/") != 2:
-                log.error("Invalid app path: {}!".format(pipeline_env.cf_full_name))
+                pipeline_env.log_message="Invalid app path: {}!".format(pipeline_env.cf_full_name)
+                log.error(pipeline_env.log_message)
+                write_csv("a",
+                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
+                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                )
                 continue
 
             # Read the org, spoace and app for this environment
