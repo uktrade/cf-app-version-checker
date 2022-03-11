@@ -4,7 +4,7 @@ from github import Github
 from cloudfoundry_client.client import CloudFoundryClient
 from datetime import datetime
 import yaml
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 
 def get_pipeline_configs(repo):
@@ -59,6 +59,10 @@ class PipelineApp:
     scm_repo_default_branch_head_commit_date: str = None
     scm_repo_default_branch_head_commit_author: str = None
     scm_repo_default_branch_head_commit_committer: str = None
+
+@dataclass
+class PipelineEnv:
+    config_env: str = None
     cf_full_name: str = None
     cf_app_type: str = None
     cf_org_name: str = None
@@ -167,51 +171,56 @@ def run_github(log):
 
         # Process each environment
         for environment_yaml in pipeline_app.config["environments"]:
-            # Read the CF path from the pipeline yaml
-            pipeline_app.cf_full_name = environment_yaml["app"]
-            log.info("CloudFoundry Path: {}".format(pipeline_app.cf_full_name))
+            pipeline_env = PipelineEnv()
+            pipeline_env.config_env = environment_yaml["environment"]
+            log.info("Environment: {}".format(pipeline_env.config_env))
 
-            pipeline_app.cf_app_type = environment_yaml["type"]
-            log.info("App Type: {}".format(pipeline_app.cf_app_type))
-            if pipeline_app.cf_app_type != "gds":
-                log.warning("App type is '{}'. Only processing 'gds' type apps here.".format(pipeline_app.cf_app_type))
+            # Read the CF path from the pipeline yaml
+            pipeline_env.cf_full_name = environment_yaml["app"]
+            log.info("CloudFoundry Path: {}".format(pipeline_env.cf_full_name))
+
+            pipeline_env.cf_app_type = environment_yaml["type"]
+            log.info("App Type: {}".format(pipeline_env.cf_app_type))
+            if pipeline_env.cf_app_type != "gds":
+                log.warning("App type is '{}'. Only processing 'gds' type apps here.".format(pipeline_env.cf_app_type))
                 continue
 
             # Check CF application path has exactly 2 "/" characters - i.e. "org/spoace/app"
-            if pipeline_app.cf_full_name.count("/") != 2:
-                log.error("Invalid app path: {}!".format(pipeline_app.cf_full_name))
+            if pipeline_env.cf_full_name.count("/") != 2:
+                log.error("Invalid app path: {}!".format(pipeline_env.cf_full_name))
                 continue
 
             # Read the org, spoace and app for this environment
-            pipeline_app.cf_org_name = pipeline_app.cf_full_name.split("/")[0]
-            log.info("Org: {}".format(pipeline_app.cf_org_name))
-            pipeline_app.cf_org_guid = get_cf_org_guid(cf, pipeline_app.cf_org_name)
-            log.info("Org Guid: {}".format(pipeline_app.cf_org_guid))
+            pipeline_env.cf_org_name = pipeline_env.cf_full_name.split("/")[0]
+            log.info("Org: {}".format(pipeline_env.cf_org_name))
+            pipeline_env.cf_org_guid = get_cf_org_guid(cf, pipeline_env.cf_org_name)
+            log.info("Org Guid: {}".format(pipeline_env.cf_org_guid))
 
-            pipeline_app.cf_space_name = pipeline_app.cf_full_name.split("/")[1]
-            log.info("Space: {}".format(pipeline_app.cf_space_name))
-            pipeline_app.cf_space_guid = get_cf_space_guid(cf, pipeline_app.cf_org_guid, pipeline_app.cf_space_name)
-            log.info("Space Guid: {}".format(pipeline_app.cf_space_guid))
+            pipeline_env.cf_space_name = pipeline_env.cf_full_name.split("/")[1]
+            log.info("Space: {}".format(pipeline_env.cf_space_name))
+            pipeline_env.cf_space_guid = get_cf_space_guid(cf, pipeline_env.cf_org_guid, pipeline_env.cf_space_name)
+            log.info("Space Guid: {}".format(pipeline_env.cf_space_guid))
 
-            pipeline_app.cf_app_name = pipeline_app.cf_full_name.split("/")[2]
-            log.info("App: {}".format(pipeline_app.cf_app_name))
-            pipeline_app.cf_app_guid = get_cf_app_guid(cf, pipeline_app.cf_org_guid, pipeline_app.cf_space_guid, pipeline_app.cf_app_name)
-            log.info("App Guid: {}".format(pipeline_app.cf_app_guid))
+            pipeline_env.cf_app_name = pipeline_env.cf_full_name.split("/")[2]
+            log.info("App: {}".format(pipeline_env.cf_app_name))
+            pipeline_env.cf_app_guid = get_cf_app_guid(cf, pipeline_env.cf_org_guid, pipeline_env.cf_space_guid, pipeline_env.cf_app_name)
+            log.info("App Guid: {}".format(pipeline_env.cf_app_guid))
 
             # App GUID validation
             try:
-                log.debug(cf.v3.apps.get(pipeline_app.cf_app_guid))
+                log.debug(cf.v3.apps.get(pipeline_env.cf_app_guid))
             except:
-                log.error("Cannot read app '{}' with guid '{}'!".format(pipeline_app.cf_app_name, pipeline_app.cf_app_guid))
+                pipeline_env.log_message="Cannot read app '{}' with guid '{}'!".format(pipeline_env.cf_app_name, pipeline_env.cf_app_guid)
+                log.error(pipeline_env.log_message)
                 continue
             
             # Get app environment configuration
-            cf_app_env=cf.v3.apps.get_env(application_guid=pipeline_app.cf_app_guid)
+            cf_app_env=cf.v3.apps.get_env(application_guid=pipeline_env.cf_app_guid)
             try:
-                pipeline_app.cf_app_git_branch = cf_app_env["environment_variables"]["GIT_BRANCH"]
-                log.info("CF GIT_BRANCH: {}".format(pipeline_app.cf_app_git_branch))
-                pipeline_app.cf_app_git_commit = cf_app_env["environment_variables"]["GIT_COMMIT"]
-                log.info("CF GIT_COMMIT: {}".format(pipeline_app.cf_app_git_commit))
+                pipeline_env.cf_app_git_branch = cf_app_env["environment_variables"]["GIT_BRANCH"]
+                log.info("CF GIT_BRANCH: {}".format(pipeline_env.cf_app_git_branch))
+                pipeline_env.cf_app_git_commit = cf_app_env["environment_variables"]["GIT_COMMIT"]
+                log.info("CF GIT_COMMIT: {}".format(pipeline_env.cf_app_git_commit))
             except:
                 log.error("No SCM Branch or Commit Hash in app environmant!")
                 continue
@@ -219,31 +228,32 @@ def run_github(log):
             # Get commit details of CF commit and calculate drift days
             try:
                 # Calculate "simple" drift days - between head commit date and CF commit date
-                cf_commit=pipeline_repo.get_commit(pipeline_app.cf_app_git_commit)
-                pipeline_app.cf_commit_date = datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
-                log.info("Last modified: {}".format(pipeline_app.cf_commit_date))
-                pipeline_app.cf_commit_author = cf_commit.author.login
-                log.info("Modified by: {}".format(pipeline_app.cf_commit_author))
-                pipeline_app.cf_commit_count = pipeline_repo.get_commits(pipeline_app.cf_app_git_commit).totalCount
-                log.info("Branch commits: {}".format(pipeline_app.cf_commit_count))
-                pipeline_app.drift_time_simple = pipeline_app.cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
-                log.info("Drift (simple): {} days".format(pipeline_app.drift_time_simple.days))
+                cf_commit=pipeline_repo.get_commit(pipeline_env.cf_app_git_commit)
+                pipeline_env.cf_commit_date = datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT)
+                log.info("Last modified: {}".format(pipeline_env.cf_commit_date))
+                pipeline_env.cf_commit_author = cf_commit.author.login
+                log.info("Modified by: {}".format(pipeline_env.cf_commit_author))
+                pipeline_env.cf_commit_count = pipeline_repo.get_commits(pipeline_env.cf_app_git_commit).totalCount
+                log.info("Branch commits: {}".format(pipeline_env.cf_commit_count))
+                pipeline_env.drift_time_simple = pipeline_env.cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
+                log.info("Drift (simple): {} days".format(pipeline_env.drift_time_simple.days))
 
                 # Calculate merge-base drift days - between default branch head commit date and date of last common ancestor (head and cf)
-                cf_compare=pipeline_repo.compare(pipeline_repo_default_branch.commit.sha, pipeline_app.cf_app_git_commit)
-                pipeline_app.git_compare_ahead_by = cf_compare.ahead_by
-                log.info("Ahead by: {}".format(pipeline_app.git_compare_ahead_by))
-                pipeline_app.git_compare_behind_by = cf_compare.behind_by
-                log.info("Behind by: {}".format(pipeline_app.git_compare_behind_by))
-                pipeline_app.git_compare_merge_base_commit = cf_compare.merge_base_commit.sha
-                log.info("Merge-base Commit: {}".format(pipeline_app.git_compare_merge_base_commit))
-                merge_base_commit=pipeline_repo.get_commit(pipeline_app.git_compare_merge_base_commit)
-                pipeline_app.git_compare_merge_base_commit_date=datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT)
-                log.info("Merge-base Commit Date: {}".format(pipeline_app.git_compare_merge_base_commit_date))
-                pipeline_app.drift_time_merge_base=pipeline_app.git_compare_merge_base_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
-                log.info("Drift (from merge-base)): {} days".format(pipeline_app.drift_time_merge_base.days))
+                cf_compare=pipeline_repo.compare(pipeline_repo_default_branch.commit.sha, pipeline_env.cf_app_git_commit)
+                pipeline_env.git_compare_ahead_by = cf_compare.ahead_by
+                log.info("Ahead by: {}".format(pipeline_env.git_compare_ahead_by))
+                pipeline_env.git_compare_behind_by = cf_compare.behind_by
+                log.info("Behind by: {}".format(pipeline_env.git_compare_behind_by))
+                pipeline_env.git_compare_merge_base_commit = cf_compare.merge_base_commit.sha
+                log.info("Merge-base Commit: {}".format(pipeline_env.git_compare_merge_base_commit))
+                merge_base_commit=pipeline_repo.get_commit(pipeline_env.git_compare_merge_base_commit)
+                pipeline_env.git_compare_merge_base_commit_date=datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT)
+                log.info("Merge-base Commit Date: {}".format(pipeline_env.git_compare_merge_base_commit_date))
+                pipeline_env.drift_time_merge_base=pipeline_env.git_compare_merge_base_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
+                log.info("Drift (from merge-base): {} days".format(pipeline_env.drift_time_merge_base.days))
             except:
-                log.error("Cannot read commit {}!".format(pipeline_app.cf_app_git_commit))
+                pipeline_env.log_message="Cannot read commit {}!".format(pipeline_env.cf_app_git_commit)
+                log.error(pipeline_env.log_message)
                 continue
 
         log.info("DONE Processing pipeline file: {}".format(pipeline_file))
