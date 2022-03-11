@@ -4,6 +4,7 @@ from github import Github
 from cloudfoundry_client.client import CloudFoundryClient
 from datetime import datetime
 import yaml
+import csv
 from dataclasses import dataclass, fields
 
 
@@ -45,6 +46,13 @@ def get_config_environment_names(config_yaml):
     return environments
 
 
+def write_csv(write_mode, columns):
+    f = open(settings.CSV_OUTPUT_FILENAME, write_mode)
+    writer = csv.writer(f)
+    writer.writerow(columns)
+    f.close()
+
+
 @dataclass
 class PipelineApp:
     config_filename: str
@@ -82,11 +90,15 @@ class PipelineEnv:
     git_compare_merge_base_commit: str = None
     git_compare_merge_base_commit_date: str = None
     drift_time_merge_base: str = None
+    log_message: str = None
 
 
 def run_github(log):
-
     scan_start_time=datetime.now()
+    write_csv("w",
+        [ field.name for field in fields(PipelineApp) ] + 
+        [ field.name for field in fields(PipelineEnv) ]
+    )
 
     # Initialise Github object
     g = Github(settings.GITHUB_TOKEN)
@@ -107,6 +119,7 @@ def run_github(log):
 
     # Process pipelines
     for pipeline_file in pipeline_files:
+        pipeline_app = PipelineApp(pipeline_file)
 
         repo_scan_start_time=datetime.now()
         log.info("START Processing pipeline file: {}".format(pipeline_file))
@@ -212,6 +225,10 @@ def run_github(log):
             except:
                 pipeline_env.log_message="Cannot read app '{}' with guid '{}'!".format(pipeline_env.cf_app_name, pipeline_env.cf_app_guid)
                 log.error(pipeline_env.log_message)
+                write_csv("a",
+                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
+                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                )
                 continue
             
             # Get app environment configuration
@@ -222,7 +239,12 @@ def run_github(log):
                 pipeline_env.cf_app_git_commit = cf_app_env["environment_variables"]["GIT_COMMIT"]
                 log.info("CF GIT_COMMIT: {}".format(pipeline_env.cf_app_git_commit))
             except:
-                log.error("No SCM Branch or Commit Hash in app environmant!")
+                pipeline_env.log_message="No SCM Branch or Commit Hash in app environmant"
+                log.error(pipeline_env.log_message)
+                write_csv("a",
+                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
+                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                )
                 continue
 
             # Get commit details of CF commit and calculate drift days
@@ -254,7 +276,17 @@ def run_github(log):
             except:
                 pipeline_env.log_message="Cannot read commit {}!".format(pipeline_env.cf_app_git_commit)
                 log.error(pipeline_env.log_message)
+                write_csv("a",
+                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
+                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                )
                 continue
+
+            log.debug(pipeline_app)
+            write_csv("a",
+                [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
+                [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+            )
 
         log.info("DONE Processing pipeline file: {}".format(pipeline_file))
 
