@@ -55,7 +55,9 @@ def write_csv(write_mode, columns):
 
 @dataclass
 class PipelineApp:
-    config_filename: str
+    scan_start_time: str = None
+    repo_scan_start_time: str = None
+    config_filename: str = None
     config: str = None
     scm_repo_name: str = None
     scm_repo_id: str = None
@@ -119,14 +121,16 @@ def run_github(log):
 
     # Process pipelines
     for pipeline_file in pipeline_files:
-        pipeline_app = PipelineApp(pipeline_file)
+        pipeline_app = PipelineApp()
 
-        repo_scan_start_time=datetime.now()
-        log.info("START Processing pipeline file: {}".format(pipeline_file))
-        log.info("Scan job started: {}".format(scan_start_time))
-        log.info("Repo scan started: {}".format(repo_scan_start_time))
+        pipeline_app.config_filename = pipeline_file
+        log.info("START Processing pipeline file: {}".format(pipeline_app.config_filename))
+        pipeline_app.scan_start_time = scan_start_time
+        log.info("Scan job started: {}".format(pipeline_app.scan_start_time))
+        pipeline_app.repo_scan_start_time=datetime.now()
+        log.info("Repo scan started: {}".format(pipeline_app.repo_scan_start_time))
 
-        pipeline_app.config = get_app_config_yaml(pipeline_config_repo, pipeline_file)
+        pipeline_app.config = get_app_config_yaml(pipeline_config_repo, pipeline_app.config_filename)
         log.info("Pipeline SCM: {}".format(pipeline_app.config["scm"]))
         if "uktrade" not in pipeline_app.config["scm"]:
             log.warning("Not a UKTRADE repo: {}".format(pipeline_app.config["scm"]))
@@ -288,6 +292,6 @@ def run_github(log):
                 [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
             )
 
-        log.info("DONE Processing pipeline file: {}".format(pipeline_file))
+        log.info("DONE Processing pipeline file: {}".format(pipeline_app.config_filename))
 
     exit()
