@@ -16,21 +16,6 @@ def get_pipeline_configs(repo):
     return yaml_file_list  
 
 
-def get_cf_org_guid(cf, org_name):
-    for cf_orgs in cf.v3.organizations.list(names=org_name):
-        return cf_orgs['guid']
-
-
-def get_cf_space_guid(cf, org_guid, space_name):
-    for cf_spaces in cf.v3.spaces.list(names=space_name, organization_guids=org_guid):
-        return cf_spaces['guid']
-
-
-def get_cf_app_guid(cf, org_guid, space_guid, app_name):
-    for cf_apps in cf.v3.apps.list(names=app_name, space_guids=space_guid, organization_guids=org_guid):
-        return cf_apps['guid']
-
-
 def get_app_config_yaml(repo, config_file):
     config_text = repo.get_contents(config_file).decoded_content.decode()
     config_yaml = yaml.load(config_text, Loader=yaml.FullLoader)
@@ -172,18 +157,19 @@ def run_github(log):
                 write_record(pipeline_app,pipeline_env)
                 continue
 
-            # Read the org, spoace and app for this environment
+            # Read the org, space and app for this environment
             pipeline_env.set_log_attribute("cf_org_name", pipeline_env.cf_full_name.split("/")[0], log)
-            pipeline_env.set_log_attribute("cf_org_guid", get_cf_org_guid(cf, pipeline_env.cf_org_name), log)
+            for cf_orgs in cf.v3.organizations.list(names=pipeline_env.cf_org_name):
+                pipeline_env.set_log_attribute("cf_org_guid", cf_orgs['guid'], log)
             pipeline_env.set_log_attribute("cf_space_name", pipeline_env.cf_full_name.split("/")[1], log)
-            pipeline_env.set_log_attribute("cf_space_guid", get_cf_space_guid(cf, pipeline_env.cf_org_guid, pipeline_env.cf_space_name), log)
+            for cf_spaces in cf.v3.spaces.list(names=pipeline_env.cf_space_name, organization_guids=pipeline_env.cf_org_guid):
+                pipeline_env.set_log_attribute("cf_space_guid", cf_spaces['guid'], log)
             pipeline_env.set_log_attribute("cf_app_name", pipeline_env.cf_full_name.split("/")[2], log)
-            pipeline_env.set_log_attribute("cf_app_guid", get_cf_app_guid(cf, pipeline_env.cf_org_guid, pipeline_env.cf_space_guid, pipeline_env.cf_app_name), log)
-
+            for cf_apps in cf.v3.apps.list(names=pipeline_env.cf_app_name, space_guids=pipeline_env.cf_space_guid, organization_guids=pipeline_env.cf_org_guid):
+                pipeline_env.set_log_attribute("cf_app_guid", cf_apps['guid'], log)
+            
             # App GUID validation
-            try:
-                log.debug(cf.v3.apps.get(pipeline_env.cf_app_guid))
-            except:
+            if not pipeline_env.cf_app_guid:
                 pipeline_env.log_message="Cannot read app '{}' with guid '{}'!".format(pipeline_env.cf_app_name, pipeline_env.cf_app_guid)
                 log.error(pipeline_env.log_message)
                 write_record(pipeline_app,pipeline_env)
