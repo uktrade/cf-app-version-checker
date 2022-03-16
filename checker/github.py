@@ -5,7 +5,7 @@ from cloudfoundry_client.client import CloudFoundryClient
 from datetime import datetime
 import yaml
 import csv
-from dataclasses import dataclass, fields
+from .models import PipelineApp, PipelineEnv
 
 
 def get_pipeline_configs(repo):
@@ -53,53 +53,11 @@ def write_csv(write_mode, columns):
     f.close()
 
 
-@dataclass
-class PipelineApp:
-    scan_start_time: str = None
-    repo_scan_start_time: str = None
-    config_filename: str = None
-    config: str = None
-    scm_repo_name: str = None
-    scm_repo_id: str = None
-    scm_repo_private: str = None
-    scm_repo_archived: str = None
-    scm_repo_default_branch_name: str = None
-    scm_repo_default_branch_head_commit_sha: str = None
-    scm_repo_default_branch_head_commit_count: str = None
-    scm_repo_default_branch_head_commit_date: str = None
-    scm_repo_default_branch_head_commit_author: str = None
-    scm_repo_default_branch_head_commit_committer: str = None
-
-@dataclass
-class PipelineEnv:
-    config_env: str = None
-    cf_full_name: str = None
-    cf_app_type: str = None
-    cf_org_name: str = None
-    cf_org_guid: str = None
-    cf_space_name: str = None
-    cf_space_guid: str = None
-    cf_app_name: str = None
-    cf_app_guid: str = None
-    cf_app_git_branch: str = None
-    cf_app_git_commit: str = None
-    cf_commit_date: str = None
-    cf_commit_author: str = None
-    cf_commit_count: str = None
-    drift_time_simple: str = None
-    git_compare_ahead_by: str = None
-    git_compare_behind_by: str = None
-    git_compare_merge_base_commit: str = None
-    git_compare_merge_base_commit_date: str = None
-    drift_time_merge_base: str = None
-    log_message: str = None
-
-
 def run_github(log):
     scan_start_time=datetime.now()
     write_csv("w",
-        [ field.name for field in fields(PipelineApp) ] + 
-        [ field.name for field in fields(PipelineEnv) ]
+        [ field.name for field in PipelineApp._meta.get_fields() ] + 
+        [ field.name for field in PipelineEnv._meta.get_fields() ]
     )
 
     # Initialise Github object
@@ -137,8 +95,8 @@ def run_github(log):
             pipeline_env.log_message="Not a UKTRADE repo: {}".format(pipeline_app.config["scm"])
             log.error(pipeline_env.log_message)
             write_csv("a",
-                [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
-                [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                [ getattr(pipeline_app,field.name) for field in PipelineApp._meta.get_fields() ] +
+                [ getattr(pipeline_env,field.name) for field in PipelineEnv._meta.get_fields() ]
             )
             continue
         
@@ -204,8 +162,8 @@ def run_github(log):
                 pipeline_env.log_message="App type is '{}'. Only processing 'gds' type apps here.".format(pipeline_env.cf_app_type)
                 log.warning(pipeline_env.log_message)
                 write_csv("a",
-                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
-                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                    [ getattr(pipeline_app,field.name) for field in PipelineApp._meta.get_fields() ] +
+                    [ getattr(pipeline_env,field.name) for field in PipelineEnv._meta.get_fields() ]
                 )
                 continue
 
@@ -218,8 +176,8 @@ def run_github(log):
                 pipeline_env.log_message="Invalid app path: {}!".format(pipeline_env.cf_full_name)
                 log.error(pipeline_env.log_message)
                 write_csv("a",
-                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
-                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                    [ getattr(pipeline_app,field.name) for field in PipelineApp._meta.get_fields() ] +
+                    [ getattr(pipeline_env,field.name) for field in PipelineEnv._meta.get_fields() ]
                 )
                 continue
 
@@ -246,8 +204,8 @@ def run_github(log):
                 pipeline_env.log_message="Cannot read app '{}' with guid '{}'!".format(pipeline_env.cf_app_name, pipeline_env.cf_app_guid)
                 log.error(pipeline_env.log_message)
                 write_csv("a",
-                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
-                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                    [ getattr(pipeline_app,field.name) for field in PipelineApp._meta.get_fields() ] +
+                    [ getattr(pipeline_env,field.name) for field in PipelineEnv._meta.get_fields() ]
                 )
                 continue
             
@@ -262,8 +220,8 @@ def run_github(log):
                 pipeline_env.log_message="No SCM Branch or Commit Hash in app environmant"
                 log.error(pipeline_env.log_message)
                 write_csv("a",
-                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
-                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                    [ getattr(pipeline_app,field.name) for field in PipelineApp._meta.get_fields() ] +
+                    [ getattr(pipeline_env,field.name) for field in PipelineEnv._meta.get_fields() ]
                 )
                 continue
 
@@ -297,15 +255,15 @@ def run_github(log):
                 pipeline_env.log_message="Cannot read commit {}!".format(pipeline_env.cf_app_git_commit)
                 log.error(pipeline_env.log_message)
                 write_csv("a",
-                    [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
-                    [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                    [ getattr(pipeline_app,field.name) for field in PipelineApp._meta.get_fields() ] +
+                    [ getattr(pipeline_env,field.name) for field in PipelineEnv._meta.get_fields() ]
                 )
                 continue
 
             log.debug(pipeline_app)
             write_csv("a",
-                [ getattr(pipeline_app,field.name) for field in fields(pipeline_app) ] +
-                [ getattr(pipeline_env,field.name) for field in fields(pipeline_env) ]
+                [ getattr(pipeline_app,field.name) for field in PipelineApp._meta.get_fields() ] +
+                [ getattr(pipeline_env,field.name) for field in PipelineEnv._meta.get_fields() ]
             )
 
         log.info("DONE Processing pipeline file: {}".format(pipeline_app.config_filename))
