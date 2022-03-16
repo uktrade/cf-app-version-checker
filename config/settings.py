@@ -139,3 +139,4 @@ GIT_CLEANUP_LIST = ["git@github.com:","https://github.com/",".git"]
 GIT_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %Z"
 GIT_PIPELINE_REPO = os.environ.get("GIT_PIPELINE_REPO", "")
 CSV_OUTPUT_FILENAME = os.environ.get("CSV_OUTPUT_FILENAME", "output.csv")
+LOG_LEVEL = {"CRITICAL":50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10, "NOTSET": 0}

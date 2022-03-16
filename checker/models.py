@@ -17,6 +17,11 @@ class PipelineApp(models.Model):
     scm_repo_default_branch_head_commit_author = models.CharField(max_length=255)
     scm_repo_default_branch_head_commit_committer = models.CharField(max_length=255)
 
+    def set_log_attribute(self, attribute, value, log, log_level=20):
+        setattr(self, attribute, value)
+        log.log(log_level,
+            "{} : {}".format(attribute, getattr(self, attribute)) 
+        )
 
 class PipelineEnv(models.Model):
     config_env = models.CharField(max_length=255)
