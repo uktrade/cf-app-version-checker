@@ -20,10 +20,11 @@ class PipelineApp(models.Model):
     def set_log_attribute(self, attribute, value, log, log_level=20):
         setattr(self, attribute, value)
         log.log(log_level,
-            "{} : {}".format(attribute, getattr(self, attribute)) 
+            "{} - {} : {}".format(self.config_filename, attribute, getattr(self, attribute)) 
         )
 
 class PipelineEnv(models.Model):
+    config_filename_fk = models.CharField(max_length=255)
     config_env = models.CharField(max_length=255)
     cf_full_name = models.CharField(max_length=255)
     cf_app_type = models.CharField(max_length=255)
@@ -45,3 +46,9 @@ class PipelineEnv(models.Model):
     git_compare_merge_base_commit_date = models.CharField(max_length=255)
     drift_time_merge_base = models.CharField(max_length=255)
     log_message = models.CharField(max_length=255)
+
+    def set_log_attribute(self, attribute, value, log, log_level=20):
+        setattr(self, attribute, value)
+        log.log(log_level,
+            "{} - {} - {} : {}".format(self.config_filename_fk, self.config_env, attribute, getattr(self, attribute)) 
+        )
