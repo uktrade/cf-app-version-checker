@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import PipelineApp, PipelineEnv
+
+admin.site.register(PipelineApp)
+admin.site.register(PipelineEnv)
