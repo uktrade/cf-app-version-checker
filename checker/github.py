@@ -110,7 +110,7 @@ def run_github(log):
         pipeline_app.set_log_attribute("scm_repo_branch_list", pipeline_repo_branch_list, log)
         pipeline_app.set_log_attribute("scm_repo_default_branch_name", pipeline_repo.default_branch, log)
         pipeline_app.set_log_attribute("scm_repo_primary_branch_name", pipeline_repo.default_branch, log)
-        # Override default branch with "master" or "main" if they exist (prefer "main")
+        # Override primary branch with "master" or "main" if they exist (prefer "main")
         for branch_list in ["master", "main"]:
             if branch_list in pipeline_app.scm_repo_branch_list:
                 log.info("{} - Override scm_repo_primary_branch_name with '{}'.".format(pipeline_app.config_filename, branch_list))
@@ -118,32 +118,32 @@ def run_github(log):
             else:
                 log.info("{} - No '{}' branch exists".format(pipeline_app.config_filename, branch_list))                
 
-        # Read pipeline app SCM repo default branch
-        pipeline_repo_default_branch=pipeline_repo.get_branch(pipeline_app.scm_repo_default_branch_name)
-        pipeline_app.set_log_attribute("scm_repo_default_branch_head_commit_sha", pipeline_repo_default_branch.commit.sha, log)
+        # Read pipeline app SCM repo primary branch
+        pipeline_repo_primary_branch=pipeline_repo.get_branch(pipeline_app.scm_repo_primary_branch_name)
+        pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_sha", pipeline_repo_primary_branch.commit.sha, log)
         
-        # Read pipeline app SCM repo default branch commits
-        pipeline_repo_default_branch_commits=pipeline_repo.get_commits(pipeline_app.scm_repo_default_branch_name)
-        pipeline_app.set_log_attribute("scm_repo_default_branch_head_commit_count", pipeline_repo_default_branch_commits.totalCount, log)
+        # Read pipeline app SCM repo primary branch commits
+        pipeline_repo_primary_branch_commits=pipeline_repo.get_commits(pipeline_app.scm_repo_primary_branch_name)
+        pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_count", pipeline_repo_primary_branch_commits.totalCount, log)
 
-        # Read pipeline app SCM repo default branch head commit
-        pipeline_repo_default_branch_head_commit=pipeline_repo.get_commit(pipeline_app.scm_repo_default_branch_head_commit_sha)
-        pipeline_app.set_log_attribute("scm_repo_default_branch_head_commit_date", datetime.strptime(pipeline_repo_default_branch_head_commit.last_modified, settings.GIT_DATE_FORMAT), log)
+        # Read pipeline app SCM repo primary branch head commit
+        pipeline_repo_primary_branch_head_commit=pipeline_repo.get_commit(pipeline_app.scm_repo_primary_branch_head_commit_sha)
+        pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_date", datetime.strptime(pipeline_repo_primary_branch_head_commit.last_modified, settings.GIT_DATE_FORMAT), log)
         try:
-            pipeline_app.set_log_attribute("scm_repo_default_branch_head_commit_author", pipeline_repo_default_branch_head_commit.author.login, log)
+            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_author", pipeline_repo_primary_branch_head_commit.author.login, log)
         except AttributeError:
-            pipeline_app.set_log_attribute("scm_repo_default_branch_head_commit_author", "N/A", log, settings.LOG_LEVEL["WARNING"])
+            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_author", "N/A", log, settings.LOG_LEVEL["WARNING"])
             log.warn("Author cannot be read")
         except Exception as ex:
-            pipeline_app.set_log_attribute("scm_repo_default_branch_head_commit_author", "N/A", log, settings.LOG_LEVEL["ERROR"])
+            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_author", "N/A", log, settings.LOG_LEVEL["ERROR"])
             log.error("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
         try:
-            pipeline_app.set_log_attribute("scm_repo_default_branch_head_commit_committer", pipeline_repo_default_branch_head_commit.committer.login, log)
+            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_committer", pipeline_repo_primary_branch_head_commit.committer.login, log)
         except AttributeError:
-            pipeline_app.set_log_attribute("scm_repo_default_branch_head_commit_committer", "N/A", log, settings.LOG_LEVEL["WARNING"])
+            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", log, settings.LOG_LEVEL["WARNING"])
             log.warn("Committer cannot be read")
         except Exception as ex:
-            pipeline_app.set_log_attribute("scm_repo_default_branch_head_commit_committer", "N/A", log, settings.LOG_LEVEL["ERROR"])
+            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", log, settings.LOG_LEVEL["ERROR"])
             log.error("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
 
 
@@ -207,11 +207,11 @@ def run_github(log):
                 pipeline_env.set_log_attribute("cf_commit_author", cf_commit.author.login, log)
 
                 # Calculate "simple" drift days - between head commit date and CF commit date
-                drift_time_simple = pipeline_env.cf_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
+                drift_time_simple = pipeline_env.cf_commit_date-pipeline_app.scm_repo_primary_branch_head_commit_date
                 pipeline_env.set_log_attribute("drift_time_simple", drift_time_simple, log)
 
-                # Calculate merge-base drift days - between default branch head commit date and date of last common ancestor (head and cf)
-                cf_compare=pipeline_repo.compare(pipeline_repo_default_branch.commit.sha, pipeline_env.cf_app_git_commit)
+                # Calculate merge-base drift days - between primary branch head commit date and date of last common ancestor (head and cf)
+                cf_compare=pipeline_repo.compare(pipeline_repo_primary_branch.commit.sha, pipeline_env.cf_app_git_commit)
                 pipeline_env.set_log_attribute("git_compare_ahead_by", cf_compare.ahead_by, log)
                 pipeline_env.set_log_attribute("git_compare_behind_by", cf_compare.behind_by, log)
                 pipeline_env.set_log_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, log)
@@ -219,7 +219,7 @@ def run_github(log):
                 pipeline_env.set_log_attribute("git_compare_merge_base_commit_date", datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT), log)
                 pipeline_env.set_log_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, log)
 
-                drift_time_merge_base=pipeline_env.git_compare_merge_base_commit_date-pipeline_app.scm_repo_default_branch_head_commit_date
+                drift_time_merge_base=pipeline_env.git_compare_merge_base_commit_date-pipeline_app.scm_repo_primary_branch_head_commit_date
                 pipeline_env.set_log_attribute("drift_time_merge_base", drift_time_merge_base, log)
             except:
                 pipeline_env.log_message="Cannot read commit {}!".format(pipeline_env.cf_app_git_commit)
