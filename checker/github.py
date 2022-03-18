@@ -104,7 +104,19 @@ def run_github(log):
         pipeline_app.set_log_attribute("scm_repo_id", pipeline_repo.id, log)
         pipeline_app.set_log_attribute("scm_repo_private", pipeline_repo.private, log)
         pipeline_app.set_log_attribute("scm_repo_archived", pipeline_repo.archived, log)
+
+        # Read branches and set branch to compare for code-drift calculations
+        pipeline_repo_branch_list = [ branch.name for branch in pipeline_repo.get_branches() ]
+        pipeline_app.set_log_attribute("scm_repo_branch_list", pipeline_repo_branch_list, log)
         pipeline_app.set_log_attribute("scm_repo_default_branch_name", pipeline_repo.default_branch, log)
+        pipeline_app.set_log_attribute("scm_repo_primary_branch_name", pipeline_repo.default_branch, log)
+        # Override default branch with "master" or "main" if they exist (prefer "main")
+        for branch_list in ["master", "main"]:
+            if branch_list in pipeline_app.scm_repo_branch_list:
+                log.info("{} - Override scm_repo_primary_branch_name with '{}'.".format(pipeline_app.config_filename, branch_list))
+                pipeline_app.set_log_attribute("scm_repo_primary_branch_name", branch_list, log)
+            else:
+                log.info("{} - No '{}' branch exists".format(pipeline_app.config_filename, branch_list))                
 
         # Read pipeline app SCM repo default branch
         pipeline_repo_default_branch=pipeline_repo.get_branch(pipeline_app.scm_repo_default_branch_name)
