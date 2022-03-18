@@ -54,7 +54,7 @@ def write_record(app, env, log):
     log.info("{} - Saved env record. ID is {}.".format(app.config_filename, env.id))
 
 
-def run_github(log):
+def run_check(log):
     scan_start_time=datetime.now()
     write_headers(PipelineApp, PipelineEnv)
 
