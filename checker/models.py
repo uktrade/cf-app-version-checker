@@ -26,7 +26,7 @@ class PipelineApp(models.Model):
         )
 
 class PipelineEnv(models.Model):
-    config_filename_fk = models.CharField(max_length=255)
+    config_id_fk = models.CharField(max_length=255)
     config_env = models.CharField(max_length=255)
     cf_full_name = models.CharField(max_length=255)
     cf_app_type = models.CharField(max_length=255)
@@ -49,8 +49,8 @@ class PipelineEnv(models.Model):
     drift_time_merge_base = models.CharField(max_length=255)
     log_message = models.CharField(max_length=255)
 
-    def set_log_attribute(self, attribute, value, log, log_level=20):
+    def set_log_attribute(self, attribute, value, config_filename, log, log_level=20):
         setattr(self, attribute, value)
         log.log(log_level,
-            "{} - {} - {} : {}".format(self.config_filename_fk, self.config_env, attribute, getattr(self, attribute)) 
+            "{} - {} - {} : {}".format(config_filename, self.config_env, attribute, getattr(self, attribute)) 
         )
