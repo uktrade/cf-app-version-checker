@@ -1,2 +1,47 @@
-<H1>Home</H1>
-Placeholder
+<html>
+<H1>Pipeline Apps</H1>
+
+<body>
+
+Last scan time: <b>{{ last_scan_time }}</b>
+<br><br>
+
+<table border="2" >
+<tr>
+    <td>Pipeline Filename</td>
+    <td>Pipeline Environment</td>
+    <td>SCM Repo Primary Branch</td>
+    <td>PaaS Name</td>
+    <td>PaaS Git Branch</td>
+    <td>PaaS Git Commit</td>
+    <td>Commit Date</td>
+    <td>Author</td>
+    <td>Ahead By</td>
+    <td>Behind By</td>
+    <td>Drift (simple)</td>
+    <td>Drift (base merge)</td>
+    <td>Messages</td>
+</tr>
+{% for pipeline_env in pipeline_envs %}
+<tr>
+    <td>{{ pipeline_env.config_id_fk.config_filename }}</td>
+    <td>{{ pipeline_env.config_env }}</td>
+    <td>{{ pipeline_env.config_id_fk.scm_repo_primary_branch_name }}</td>
+    <td>{{ pipeline_env.cf_full_name }}</td>
+    <td>{{ pipeline_env.cf_app_git_branch }}</td>
+    <td>{{ pipeline_env.cf_app_git_commit }}</td>
+    <td>{{ pipeline_env.cf_commit_date }}</td>
+    <td>{{ pipeline_env.cf_commit_author }}</td>
+    <td>{{ pipeline_env.git_compare_ahead_by }}</td>
+    <td>{{ pipeline_env.git_compare_behind_by }}</td>
+    <td>{{ pipeline_env.drift_time_simple }}</td>
+    <td>{{ pipeline_env.drift_time_merge_base }}</td>
+    <td>{{ pipeline_env.log_message }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</body>
+
+</html>
