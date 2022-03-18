@@ -156,7 +156,7 @@ def run_github(log):
         # Process each environment
         for environment_yaml in pipeline_app.config["environments"]:
             pipeline_env = PipelineEnv()
-            pipeline_env.set_log_attribute("config_id_fk", pipeline_app.id, pipeline_app.config_filename, log)
+            pipeline_env.set_log_attribute("config_id_fk", pipeline_app, pipeline_app.config_filename, log)
             pipeline_env.set_log_attribute("config_env", environment_yaml["environment"], pipeline_app.config_filename, log)
             pipeline_env.set_log_attribute("cf_app_type", environment_yaml["type"], pipeline_app.config_filename, log)
             if pipeline_env.cf_app_type != "gds":
