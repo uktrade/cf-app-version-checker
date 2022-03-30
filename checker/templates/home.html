@@ -8,7 +8,9 @@ Last scan time: <b>{{ last_scan_time }}</b>
 
 <table border="2" >
 <tr>
+    <td>Pipeline_id</td>
     <td>Pipeline Filename</td>
+    <td>Env_id</td>
     <td>Pipeline Environment</td>
     <td>SCM Repo Primary Branch</td>
     <td>PaaS Name</td>
@@ -24,7 +26,9 @@ Last scan time: <b>{{ last_scan_time }}</b>
 </tr>
 {% for pipeline_env in pipeline_envs %}
 <tr>
+    <td>{{ pipeline_env.config_id_fk.id }}</td>
     <td>{{ pipeline_env.config_id_fk.config_filename }}</td>
+    <td>{{ pipeline_env.id }}</td>
     <td>{{ pipeline_env.config_env }}</td>
     <td>{{ pipeline_env.config_id_fk.scm_repo_primary_branch_name }}</td>
     <td>{{ pipeline_env.cf_full_name }}</td>
