@@ -50,10 +50,16 @@ def write_record(app, env, log):
         [ getattr(app,field.name) for field in app._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ] +
         [ getattr(env,field.name) for field in env._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ]
     )
-    app.save()
-    log.info("{} - Saved app record. ID is {}.".format(app.config_filename, app.id))
-    env.save()
-    log.info("{} - Saved env record. ID is {}.".format(app.config_filename, env.id))
+    if app:
+        app.save()
+        log.info("{} - Saved app record. ID is {}.".format(app.config_filename, app.id))
+    else:
+        log.warning("App record is not defined.")
+    if env:
+        env.save()
+        log.info("{} - Saved env record. ID is {}.".format(app.config_filename, env.id))
+    else:
+        log.warning("Env record is not defined.")
 
 
 def run_check(log):
