@@ -23,7 +23,7 @@ class PipelineApp(models.Model):
     scm_repo_primary_branch_head_commit_author = models.CharField(max_length=64)
     scm_repo_primary_branch_head_commit_committer = models.CharField(max_length=64)
 
-    def set_log_attribute(self, attribute, value, log_level=20):
+    def set_attribute(self, attribute, value, log_level=20):
         setattr(self, attribute, value)
         log.log(log_level,
             "{} - {} : {}".format(self.config_filename, attribute, getattr(self, attribute)) 
@@ -53,7 +53,7 @@ class PipelineEnv(models.Model):
     drift_time_merge_base = models.DurationField(null=True, blank=True)
     log_message = models.CharField(max_length=255)
 
-    def set_log_attribute(self, attribute, value, config_filename, log_level=20):
+    def set_attribute(self, attribute, value, config_filename, log_level=20):
         setattr(self, attribute, value)
         log.log(log_level,
             "{} - {} - {} : {}".format(config_filename, self.config_env, attribute, getattr(self, attribute)) 

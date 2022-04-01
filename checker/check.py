@@ -91,9 +91,9 @@ def run_check():
     for pipeline_file in pipeline_files:
         # Process pipelines
         pipeline_app = PipelineApp()
-        pipeline_app.set_log_attribute("config_filename", pipeline_file)
-        pipeline_app.set_log_attribute("scan_start_time", scan_start_time)
-        pipeline_app.set_log_attribute("repo_scan_start_time", datetime.utcnow().replace(tzinfo=pytz.utc))
+        pipeline_app.set_attribute("config_filename", pipeline_file)
+        pipeline_app.set_attribute("scan_start_time", scan_start_time)
+        pipeline_app.set_attribute("repo_scan_start_time", datetime.utcnow().replace(tzinfo=pytz.utc))
 
         pipeline_app.config_filename = pipeline_file
         log.info("START Processing pipeline file: {}".format(pipeline_app.config_filename))
@@ -103,7 +103,7 @@ def run_check():
         log.info("Repo scan started: {}".format(pipeline_app.repo_scan_start_time))
 
         # Read config and check for a "uktrade" repo
-        pipeline_app.set_log_attribute("config", get_app_config_yaml(pipeline_config_repo, pipeline_app.config_filename))
+        pipeline_app.set_attribute("config", get_app_config_yaml(pipeline_config_repo, pipeline_app.config_filename))
         log.info("{} - config['scm']: {}".format(pipeline_app.config_filename, pipeline_app.config["scm"]))
         if "uktrade" not in pipeline_app.config["scm"]:
             pipeline_env = PipelineEnv()
@@ -117,50 +117,50 @@ def run_check():
 
         # Read pipeline app SCM repo
         pipeline_repo = g.get_repo(pipeline_app.config["scm"])
-        pipeline_app.set_log_attribute("scm_repo_name", pipeline_repo.name)
-        pipeline_app.set_log_attribute("scm_repo_id", pipeline_repo.id)
-        pipeline_app.set_log_attribute("scm_repo_private", pipeline_repo.private)
-        pipeline_app.set_log_attribute("scm_repo_archived", pipeline_repo.archived)
+        pipeline_app.set_attribute("scm_repo_name", pipeline_repo.name)
+        pipeline_app.set_attribute("scm_repo_id", pipeline_repo.id)
+        pipeline_app.set_attribute("scm_repo_private", pipeline_repo.private)
+        pipeline_app.set_attribute("scm_repo_archived", pipeline_repo.archived)
 
         # Read branches and set branch to compare for code-drift calculations
         pipeline_repo_branch_list = [ branch.name for branch in pipeline_repo.get_branches() ]
-        pipeline_app.set_log_attribute("scm_repo_branch_list", pipeline_repo_branch_list)
-        pipeline_app.set_log_attribute("scm_repo_default_branch_name", pipeline_repo.default_branch)
-        pipeline_app.set_log_attribute("scm_repo_primary_branch_name", pipeline_repo.default_branch)
+        pipeline_app.set_attribute("scm_repo_branch_list", pipeline_repo_branch_list)
+        pipeline_app.set_attribute("scm_repo_default_branch_name", pipeline_repo.default_branch)
+        pipeline_app.set_attribute("scm_repo_primary_branch_name", pipeline_repo.default_branch)
         # Override primary branch with "master" or "main" if they exist (prefer "main")
         for branch_list in ["master", "main"]:
             if branch_list in pipeline_app.scm_repo_branch_list:
                 log.info("{} - Override scm_repo_primary_branch_name with '{}'.".format(pipeline_app.config_filename, branch_list))
-                pipeline_app.set_log_attribute("scm_repo_primary_branch_name", branch_list)
+                pipeline_app.set_attribute("scm_repo_primary_branch_name", branch_list)
             else:
                 log.info("{} - No '{}' branch exists".format(pipeline_app.config_filename, branch_list))                
 
         # Read pipeline app SCM repo primary branch
         pipeline_repo_primary_branch=pipeline_repo.get_branch(pipeline_app.scm_repo_primary_branch_name)
-        pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_sha", pipeline_repo_primary_branch.commit.sha)
+        pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_sha", pipeline_repo_primary_branch.commit.sha)
         
         # Read pipeline app SCM repo primary branch commits
         pipeline_repo_primary_branch_commits=pipeline_repo.get_commits(pipeline_app.scm_repo_primary_branch_name)
-        pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_count", pipeline_repo_primary_branch_commits.totalCount)
+        pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_count", pipeline_repo_primary_branch_commits.totalCount)
 
         # Read pipeline app SCM repo primary branch head commit
         pipeline_repo_primary_branch_head_commit=pipeline_repo.get_commit(pipeline_app.scm_repo_primary_branch_head_commit_sha)
-        pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_date", datetime.strptime(pipeline_repo_primary_branch_head_commit.last_modified, settings.GIT_DATE_FORMAT).replace(tzinfo=pytz.timezone("GMT")))
+        pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_date", datetime.strptime(pipeline_repo_primary_branch_head_commit.last_modified, settings.GIT_DATE_FORMAT).replace(tzinfo=pytz.timezone("GMT")))
         try:
-            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_author", pipeline_repo_primary_branch_head_commit.author.login)
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_author", pipeline_repo_primary_branch_head_commit.author.login)
         except AttributeError:
-            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_author", "N/A", settings.LOG_LEVEL["WARNING"])
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_author", "N/A", settings.LOG_LEVEL["WARNING"])
             log.warn("Author cannot be read")
         except Exception as ex:
-            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_author", "N/A", settings.LOG_LEVEL["ERROR"])
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_author", "N/A", settings.LOG_LEVEL["ERROR"])
             log.error("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
         try:
-            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_committer", pipeline_repo_primary_branch_head_commit.committer.login)
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_committer", pipeline_repo_primary_branch_head_commit.committer.login)
         except AttributeError:
-            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", settings.LOG_LEVEL["WARNING"])
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", settings.LOG_LEVEL["WARNING"])
             log.warn("Committer cannot be read")
         except Exception as ex:
-            pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", settings.LOG_LEVEL["ERROR"])
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", settings.LOG_LEVEL["ERROR"])
             log.error("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
 
         pipeline_app.save()
@@ -169,9 +169,9 @@ def run_check():
         # Process each environment
         for environment_yaml in pipeline_app.config["environments"]:
             pipeline_env = PipelineEnv()
-            pipeline_env.set_log_attribute("config_id_fk", pipeline_app, pipeline_app.config_filename)
-            pipeline_env.set_log_attribute("config_env", environment_yaml["environment"], pipeline_app.config_filename)
-            pipeline_env.set_log_attribute("cf_app_type", environment_yaml["type"], pipeline_app.config_filename)
+            pipeline_env.set_attribute("config_id_fk", pipeline_app, pipeline_app.config_filename)
+            pipeline_env.set_attribute("config_env", environment_yaml["environment"], pipeline_app.config_filename)
+            pipeline_env.set_attribute("cf_app_type", environment_yaml["type"], pipeline_app.config_filename)
             if pipeline_env.cf_app_type != "gds":
                 pipeline_env.log_message="App type is '{}'. Only processing 'gds' type apps here.".format(pipeline_env.cf_app_type)
                 log.warning(pipeline_env.log_message)
@@ -179,7 +179,7 @@ def run_check():
                 continue
 
             # Read the CF path from the pipeline yaml
-            pipeline_env.set_log_attribute("cf_full_name", environment_yaml["app"], pipeline_app.config_filename)
+            pipeline_env.set_attribute("cf_full_name", environment_yaml["app"], pipeline_app.config_filename)
 
             # Check CF application path has exactly 2 "/" characters - i.e. "org/spoace/app"
             if pipeline_env.cf_full_name.count("/") != 2:
@@ -189,15 +189,15 @@ def run_check():
                 continue
 
             # Read the org, space and app for this environment
-            pipeline_env.set_log_attribute("cf_org_name", pipeline_env.cf_full_name.split("/")[0], pipeline_app.config_filename)
+            pipeline_env.set_attribute("cf_org_name", pipeline_env.cf_full_name.split("/")[0], pipeline_app.config_filename)
             for cf_orgs in cf.v3.organizations.list(names=pipeline_env.cf_org_name):
-                pipeline_env.set_log_attribute("cf_org_guid", cf_orgs['guid'], pipeline_app.config_filename)
-            pipeline_env.set_log_attribute("cf_space_name", pipeline_env.cf_full_name.split("/")[1], pipeline_app.config_filename)
+                pipeline_env.set_attribute("cf_org_guid", cf_orgs['guid'], pipeline_app.config_filename)
+            pipeline_env.set_attribute("cf_space_name", pipeline_env.cf_full_name.split("/")[1], pipeline_app.config_filename)
             for cf_spaces in cf.v3.spaces.list(names=pipeline_env.cf_space_name, organization_guids=pipeline_env.cf_org_guid):
-                pipeline_env.set_log_attribute("cf_space_guid", cf_spaces['guid'], pipeline_app.config_filename)
-            pipeline_env.set_log_attribute("cf_app_name", pipeline_env.cf_full_name.split("/")[2], pipeline_app.config_filename)
+                pipeline_env.set_attribute("cf_space_guid", cf_spaces['guid'], pipeline_app.config_filename)
+            pipeline_env.set_attribute("cf_app_name", pipeline_env.cf_full_name.split("/")[2], pipeline_app.config_filename)
             for cf_apps in cf.v3.apps.list(names=pipeline_env.cf_app_name, space_guids=pipeline_env.cf_space_guid, organization_guids=pipeline_env.cf_org_guid):
-                pipeline_env.set_log_attribute("cf_app_guid", cf_apps['guid'], pipeline_app.config_filename)
+                pipeline_env.set_attribute("cf_app_guid", cf_apps['guid'], pipeline_app.config_filename)
             
             # App GUID validation
             if not pipeline_env.cf_app_guid:
@@ -209,8 +209,8 @@ def run_check():
             # Get app environment configuration
             cf_app_env=cf.v3.apps.get_env(application_guid=pipeline_env.cf_app_guid)
             try:
-                pipeline_env.set_log_attribute("cf_app_git_branch", cf_app_env["environment_variables"]["GIT_BRANCH"], pipeline_app.config_filename)
-                pipeline_env.set_log_attribute("cf_app_git_commit", cf_app_env["environment_variables"]["GIT_COMMIT"], pipeline_app.config_filename)
+                pipeline_env.set_attribute("cf_app_git_branch", cf_app_env["environment_variables"]["GIT_BRANCH"], pipeline_app.config_filename)
+                pipeline_env.set_attribute("cf_app_git_commit", cf_app_env["environment_variables"]["GIT_COMMIT"], pipeline_app.config_filename)
             except:
                 pipeline_env.log_message="No SCM Branch or Commit Hash in app environmant"
                 log.error(pipeline_env.log_message)
@@ -220,26 +220,26 @@ def run_check():
             try:
                 # Get commit details of CF commit and calculate drift days
                 cf_commit=pipeline_repo.get_commit(pipeline_env.cf_app_git_commit)
-                pipeline_env.set_log_attribute("cf_commit_date", datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT).replace(tzinfo=pytz.timezone("GMT")), pipeline_app.config_filename)
-                pipeline_env.set_log_attribute("cf_commit_author", cf_commit.author.login, pipeline_app.config_filename)
-                pipeline_env.set_log_attribute("cf_commit_count", pipeline_repo.get_commits(pipeline_env.cf_app_git_commit).totalCount, pipeline_app.config_filename)
-                pipeline_env.set_log_attribute("cf_commit_author", cf_commit.author.login, pipeline_app.config_filename)
+                pipeline_env.set_attribute("cf_commit_date", datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT).replace(tzinfo=pytz.timezone("GMT")), pipeline_app.config_filename)
+                pipeline_env.set_attribute("cf_commit_author", cf_commit.author.login, pipeline_app.config_filename)
+                pipeline_env.set_attribute("cf_commit_count", pipeline_repo.get_commits(pipeline_env.cf_app_git_commit).totalCount, pipeline_app.config_filename)
+                pipeline_env.set_attribute("cf_commit_author", cf_commit.author.login, pipeline_app.config_filename)
 
                 # Calculate "simple" drift days - between head commit date and CF commit date
                 drift_time_simple = pipeline_env.cf_commit_date-pipeline_app.scm_repo_primary_branch_head_commit_date
-                pipeline_env.set_log_attribute("drift_time_simple", drift_time_simple, pipeline_app.config_filename)
+                pipeline_env.set_attribute("drift_time_simple", drift_time_simple, pipeline_app.config_filename)
 
                 # Calculate merge-base drift days - between primary branch head commit date and date of last common ancestor (head and cf)
                 cf_compare=pipeline_repo.compare(pipeline_repo_primary_branch.commit.sha, pipeline_env.cf_app_git_commit)
-                pipeline_env.set_log_attribute("git_compare_ahead_by", cf_compare.ahead_by, pipeline_app.config_filename)
-                pipeline_env.set_log_attribute("git_compare_behind_by", cf_compare.behind_by, pipeline_app.config_filename)
-                pipeline_env.set_log_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, pipeline_app.config_filename)
+                pipeline_env.set_attribute("git_compare_ahead_by", cf_compare.ahead_by, pipeline_app.config_filename)
+                pipeline_env.set_attribute("git_compare_behind_by", cf_compare.behind_by, pipeline_app.config_filename)
+                pipeline_env.set_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, pipeline_app.config_filename)
                 merge_base_commit=pipeline_repo.get_commit(pipeline_env.git_compare_merge_base_commit)
-                pipeline_env.set_log_attribute("git_compare_merge_base_commit_date", datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT).replace(tzinfo=pytz.timezone("GMT")), pipeline_app.config_filename)
-                pipeline_env.set_log_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, pipeline_app.config_filename)
+                pipeline_env.set_attribute("git_compare_merge_base_commit_date", datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT).replace(tzinfo=pytz.timezone("GMT")), pipeline_app.config_filename)
+                pipeline_env.set_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, pipeline_app.config_filename)
 
                 drift_time_merge_base=pipeline_env.git_compare_merge_base_commit_date-pipeline_app.scm_repo_primary_branch_head_commit_date
-                pipeline_env.set_log_attribute("drift_time_merge_base", drift_time_merge_base, pipeline_app.config_filename)
+                pipeline_env.set_attribute("drift_time_merge_base", drift_time_merge_base, pipeline_app.config_filename)
             except:
                 pipeline_env.log_message="Cannot read commit {}!".format(pipeline_env.cf_app_git_commit)
                 log.error(pipeline_env.log_message)
