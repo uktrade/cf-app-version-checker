@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import models
 
 from github import Github
 from cloudfoundry_client.client import CloudFoundryClient
@@ -40,14 +41,14 @@ def write_csv(write_mode, columns):
 
 def write_headers(App, Env):
     write_csv("w",
-        [ field.name for field in App._meta.get_fields() ] + 
-        [ field.name for field in Env._meta.get_fields() ]
+        [ field.name for field in App._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ] + 
+        [ field.name for field in Env._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ]
     )
 
 def write_record(app, env, log):
     write_csv("a",
-        [ getattr(app,field.name) for field in app._meta.get_fields() ] +
-        [ getattr(env,field.name) for field in env._meta.get_fields() ]
+        [ getattr(app,field.name) for field in app._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ] +
+        [ getattr(env,field.name) for field in env._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ]
     )
     app.save()
     log.info("{} - Saved app record. ID is {}.".format(app.config_filename, app.id))
