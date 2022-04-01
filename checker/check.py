@@ -3,6 +3,7 @@ from django.conf import settings
 from github import Github
 from cloudfoundry_client.client import CloudFoundryClient
 from datetime import datetime
+import pytz
 import yaml
 import csv
 from .models import PipelineApp, PipelineEnv
@@ -55,7 +56,7 @@ def write_record(app, env, log):
 
 
 def run_check(log):
-    scan_start_time=datetime.now()
+    scan_start_time=datetime.utcnow().replace(tzinfo=pytz.utc)
     write_headers(PipelineApp, PipelineEnv)
 
     # Initialise Github object
@@ -80,7 +81,7 @@ def run_check(log):
         pipeline_app = PipelineApp()
         pipeline_app.set_log_attribute("config_filename", pipeline_file, log)
         pipeline_app.set_log_attribute("scan_start_time", scan_start_time, log)
-        pipeline_app.set_log_attribute("repo_scan_start_time", datetime.now(), log)
+        pipeline_app.set_log_attribute("repo_scan_start_time", datetime.utcnow().replace(tzinfo=pytz.utc), log)
 
         pipeline_app.config_filename = pipeline_file
         log.info("START Processing pipeline file: {}".format(pipeline_app.config_filename))
@@ -132,7 +133,7 @@ def run_check(log):
 
         # Read pipeline app SCM repo primary branch head commit
         pipeline_repo_primary_branch_head_commit=pipeline_repo.get_commit(pipeline_app.scm_repo_primary_branch_head_commit_sha)
-        pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_date", datetime.strptime(pipeline_repo_primary_branch_head_commit.last_modified, settings.GIT_DATE_FORMAT), log)
+        pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_date", datetime.strptime(pipeline_repo_primary_branch_head_commit.last_modified, settings.GIT_DATE_FORMAT).replace(tzinfo=pytz.timezone("GMT")), log)
         try:
             pipeline_app.set_log_attribute("scm_repo_primary_branch_head_commit_author", pipeline_repo_primary_branch_head_commit.author.login, log)
         except AttributeError:
@@ -207,7 +208,7 @@ def run_check(log):
             try:
                 # Get commit details of CF commit and calculate drift days
                 cf_commit=pipeline_repo.get_commit(pipeline_env.cf_app_git_commit)
-                pipeline_env.set_log_attribute("cf_commit_date", datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT), pipeline_app.config_filename, log)
+                pipeline_env.set_log_attribute("cf_commit_date", datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT).replace(tzinfo=pytz.timezone("GMT")), pipeline_app.config_filename, log)
                 pipeline_env.set_log_attribute("cf_commit_author", cf_commit.author.login, pipeline_app.config_filename, log)
                 pipeline_env.set_log_attribute("cf_commit_count", pipeline_repo.get_commits(pipeline_env.cf_app_git_commit).totalCount, pipeline_app.config_filename, log)
                 pipeline_env.set_log_attribute("cf_commit_author", cf_commit.author.login, pipeline_app.config_filename, log)
@@ -222,7 +223,7 @@ def run_check(log):
                 pipeline_env.set_log_attribute("git_compare_behind_by", cf_compare.behind_by, pipeline_app.config_filename, log)
                 pipeline_env.set_log_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, pipeline_app.config_filename, log)
                 merge_base_commit=pipeline_repo.get_commit(pipeline_env.git_compare_merge_base_commit)
-                pipeline_env.set_log_attribute("git_compare_merge_base_commit_date", datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT), pipeline_app.config_filename, log)
+                pipeline_env.set_log_attribute("git_compare_merge_base_commit_date", datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT).replace(tzinfo=pytz.timezone("GMT")), pipeline_app.config_filename, log)
                 pipeline_env.set_log_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, pipeline_app.config_filename, log)
 
                 drift_time_merge_base=pipeline_env.git_compare_merge_base_commit_date-pipeline_app.scm_repo_primary_branch_head_commit_date
