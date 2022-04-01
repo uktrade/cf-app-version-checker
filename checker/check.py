@@ -103,8 +103,8 @@ def run_check(log):
         if "uktrade" not in pipeline_app.config["scm"]:
             pipeline_env = PipelineEnv()
             pipeline_env.log_message="Not a UKTRADE repo: {}".format(pipeline_app.config["scm"])
-            log.error(pipeline_env.log_message)
-            write_record(pipeline_app, pipeline_env, log)
+            log.warning(pipeline_env.log_message)
+            write_record(pipeline_app, None, log)
             continue
 
         # Read pipeline environments
