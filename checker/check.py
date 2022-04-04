@@ -42,10 +42,10 @@ def write_csv(write_mode, columns):
         writer = csv.writer(f)
         writer.writerow(columns)
 
-def write_headers(App, Env):
+def write_headers():
     write_csv("w",
-        [ field.name for field in App._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ] + 
-        [ field.name for field in Env._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ]
+        [ field.name for field in PipelineApp._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ] + 
+        [ field.name for field in PipelineEnv._meta.get_fields() if not isinstance(field,models.ManyToOneRel) ]
     )
 
 def write_record(app, env):
@@ -67,7 +67,7 @@ def write_record(app, env):
 
 def run_check():
     scan_start_time=datetime.utcnow().replace(tzinfo=pytz.utc)
-    write_headers(PipelineApp, PipelineEnv)
+    write_headers()
 
     # Initialise Github object
     g = Github(settings.GITHUB_TOKEN)
