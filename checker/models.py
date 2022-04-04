@@ -26,7 +26,7 @@ class PipelineApp(models.Model):
     def set_attribute(self, attribute, value, log_level=20):
         setattr(self, attribute, value)
         log.log(log_level,
-            "{} - {} : {}".format(self.config_filename, attribute, getattr(self, attribute)) 
+            f"{self.config_filename} - {attribute} : {getattr(self, attribute)}"
         )
 
 class PipelineEnv(models.Model):
@@ -56,5 +56,5 @@ class PipelineEnv(models.Model):
     def set_attribute(self, attribute, value, config_filename, log_level=20):
         setattr(self, attribute, value)
         log.log(log_level,
-            "{} - {} - {} : {}".format(config_filename, self.config_env, attribute, getattr(self, attribute)) 
+            f"{config_filename} - {self.config_env} - {attribute} : {getattr(self, attribute)}"
         )

@@ -57,12 +57,12 @@ def write_record(app, env):
     )
     if app:
         app.save()
-        log.info("{} - Saved app record. ID is {}.".format(app.config_filename, app.id))
+        log.info(f"{app.config_filename} - Saved app record. ID is {app.id}")
     else:
         log.warning("App record is not defined.")
     if env:
         env.save()
-        log.info("{} - Saved env record. ID is {}.".format(app.config_filename, env.id))
+        log.info(f"{app.config_filename} - Saved env record. ID is {env.id}.")
     else:
         log.warning("Env record is not defined.")
 
@@ -83,10 +83,10 @@ def run_check():
 
     # Read the pipeline configs
     pipeline_config_repo = g.get_repo(settings.GIT_PIPELINE_REPO)
-    log.info("Config Repo: {}".format(pipeline_config_repo.name))
-    log.info("Default branch: {}".format(pipeline_config_repo.default_branch))
+    log.info(f"Config Repo: {pipeline_config_repo.name}")
+    log.info(f"Default branch: {pipeline_config_repo.default_branch}")
     pipeline_files=get_pipeline_configs(pipeline_config_repo)
-    log.debug("Pipelines: {}".format(pipeline_files))
+    log.debug(f"Pipelines: {pipeline_files}")
 
     for pipeline_file in pipeline_files:
         # Process pipelines
@@ -104,16 +104,16 @@ def run_check():
 
         # Read config and check for a "uktrade" repo
         pipeline_app.set_attribute("config", get_app_config_yaml(pipeline_config_repo, pipeline_app.config_filename))
-        log.info("{} - config['scm']: {}".format(pipeline_app.config_filename, pipeline_app.config["scm"]))
+        log.info(f"{pipeline_app.config_filename} - config['scm']: {pipeline_app.config['scm']}")
         if "uktrade" not in pipeline_app.config["scm"]:
             pipeline_env = PipelineEnv()
-            pipeline_env.log_message="Not a UKTRADE repo: {}".format(pipeline_app.config["scm"])
+            pipeline_env.log_message=f"Not a UKTRADE repo: {pipeline_app.config['scm']}"
             log.warning(pipeline_env.log_message)
             write_record(pipeline_app, None)
             continue
 
         # Read pipeline environments
-        log.info("{} - config['environments']: {}".format(pipeline_app.config_filename, get_config_environment_names(pipeline_app.config)))
+        log.info(f"{pipeline_app.config_filename} - config['environments']: {get_config_environment_names(pipeline_app.config)}")
 
         # Read pipeline app SCM repo
         pipeline_repo = g.get_repo(pipeline_app.config["scm"])
@@ -130,10 +130,10 @@ def run_check():
         # Override primary branch with "master" or "main" if they exist (prefer "main")
         for branch_list in ["master", "main"]:
             if branch_list in pipeline_app.scm_repo_branch_list:
-                log.info("{} - Override scm_repo_primary_branch_name with '{}'.".format(pipeline_app.config_filename, branch_list))
+                log.info(f"{pipeline_app.config_filename} - Override scm_repo_primary_branch_name with '{branch_list}'.")
                 pipeline_app.set_attribute("scm_repo_primary_branch_name", branch_list)
             else:
-                log.info("{} - No '{}' branch exists".format(pipeline_app.config_filename, branch_list))                
+                log.info(f"{pipeline_app.config_filename} - No '{branch_list}' branch exists")
 
         # Read pipeline app SCM repo primary branch
         pipeline_repo_primary_branch=pipeline_repo.get_branch(pipeline_app.scm_repo_primary_branch_name)
@@ -164,7 +164,7 @@ def run_check():
             log.error("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
 
         pipeline_app.save()
-        log.info("{} - Saved app record. ID is {}.".format(pipeline_app.config_filename, pipeline_app.id))
+        log.info(f"{pipeline_app.config_filename} - Saved app record. ID is {pipeline_app.id}.")
 
         # Process each environment
         for environment_yaml in pipeline_app.config["environments"]:
@@ -173,7 +173,7 @@ def run_check():
             pipeline_env.set_attribute("config_env", environment_yaml["environment"], pipeline_app.config_filename)
             pipeline_env.set_attribute("cf_app_type", environment_yaml["type"], pipeline_app.config_filename)
             if pipeline_env.cf_app_type != "gds":
-                pipeline_env.log_message="App type is '{}'. Only processing 'gds' type apps here.".format(pipeline_env.cf_app_type)
+                pipeline_env.log_message=f"App type is '{pipeline_env.cf_app_type}'. Only processing 'gds' type apps here."
                 log.warning(pipeline_env.log_message)
                 write_record(pipeline_app, pipeline_env)
                 continue
@@ -183,7 +183,7 @@ def run_check():
 
             # Check CF application path has exactly 2 "/" characters - i.e. "org/spoace/app"
             if pipeline_env.cf_full_name.count("/") != 2:
-                pipeline_env.log_message="Invalid app path: {}!".format(pipeline_env.cf_full_name)
+                pipeline_env.log_message=f"Invalid app path: {pipeline_env.cf_full_name}"
                 log.error(pipeline_env.log_message)
                 write_record(pipeline_app, pipeline_env)
                 continue
@@ -201,7 +201,7 @@ def run_check():
             
             # App GUID validation
             if not pipeline_env.cf_app_guid:
-                pipeline_env.log_message="Cannot read app '{}' with guid '{}'!".format(pipeline_env.cf_app_name, pipeline_env.cf_app_guid)
+                pipeline_env.log_message=f"Cannot read app '{pipeline_env.cf_app_name}' with guid '{pipeline_env.cf_app_guid}'!"
                 log.error(pipeline_env.log_message)
                 write_record(pipeline_app, pipeline_env)
                 continue
@@ -241,7 +241,7 @@ def run_check():
                 drift_time_merge_base=pipeline_env.git_compare_merge_base_commit_date-pipeline_app.scm_repo_primary_branch_head_commit_date
                 pipeline_env.set_attribute("drift_time_merge_base", drift_time_merge_base, pipeline_app.config_filename)
             except:
-                pipeline_env.log_message="Cannot read commit {}!".format(pipeline_env.cf_app_git_commit)
+                pipeline_env.log_message=f"Cannot read commit {pipeline_env.cf_app_git_commit}!"
                 log.error(pipeline_env.log_message)
                 write_record(pipeline_app, pipeline_env)
                 continue
@@ -249,6 +249,6 @@ def run_check():
             log.debug(pipeline_app)
             write_record(pipeline_app, pipeline_env)
 
-        log.info("{} - DONE Processing pipeline file".format(pipeline_app.config_filename))
+        log.info(f"{pipeline_app.config_filename} - DONE Processing pipeline file")
 
     exit()
