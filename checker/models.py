@@ -28,6 +28,17 @@ class PipelineApp(models.Model):
             f"{self.config_filename} - {attribute} : {getattr(self, attribute)}"
         )
 
+    def log_setattr(func):
+        def wrapper(*args, **kwargs):
+            func(*args, **kwargs)
+            if args[2] is not None and type(args[2]) is not models.base.ModelState and ( not (isinstance(args[2], str) and len(args[2]) == 0) ):
+                log.info(f"Setting App attribute: {args[1]} = {args[2]}")
+        return wrapper
+
+    @log_setattr
+    def __setattr__(self, *args, **kwargs):
+        super().__setattr__(*args, **kwargs)
+
 class PipelineEnv(models.Model):
     config_id_fk = models.ForeignKey(PipelineApp, to_field='id', on_delete=models.CASCADE)
     config_env = models.CharField(max_length=64)
@@ -57,3 +68,14 @@ class PipelineEnv(models.Model):
         log.log(log_level,
             f"{config_filename} - {self.config_env} - {attribute} : {getattr(self, attribute)}"
         )
+
+    def log_setattr(func):
+        def wrapper(*args, **kwargs):
+            func(*args, **kwargs)
+            if args[2] is not None and type(args[2]) is not models.base.ModelState and ( not (isinstance(args[2], str) and len(args[2]) == 0) ):
+                log.info(f"Setting Env attribute: {args[1]} = {args[2]}")
+        return wrapper
+
+    @log_setattr
+    def __setattr__(self, *args, **kwargs):
+        super().__setattr__(*args, **kwargs)
