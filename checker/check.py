@@ -25,7 +25,7 @@ def get_pipeline_configs(repo):
 
 def get_app_config_yaml(repo, config_file):
     config_text = repo.get_contents(config_file).decoded_content.decode()
-    config_yaml = yaml.load(config_text, Loader=yaml.FullLoader)
+    config_yaml = yaml.safe_load(config_text)
     for git_cleanup in settings.GIT_CLEANUP_LIST:
         config_yaml["scm"] = config_yaml["scm"].replace(git_cleanup, "")
     return config_yaml
