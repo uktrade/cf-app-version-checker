@@ -39,10 +39,9 @@ def get_config_environment_names(config_yaml):
 
 
 def write_csv(write_mode, columns):
-    f = open(settings.CSV_OUTPUT_FILENAME, write_mode)
-    writer = csv.writer(f)
-    writer.writerow(columns)
-    f.close()
+    with open(settings.CSV_OUTPUT_FILENAME, write_mode) as f:
+        writer = csv.writer(f)
+        writer.writerow(columns)
 
 def write_headers(App, Env):
     write_csv("w",
