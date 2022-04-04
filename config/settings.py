@@ -121,6 +121,26 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Configure logging
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'text': {
+            'format': '%(asctime)s - %(levelname)s - %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'text'
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.environ.get("LOG_LEVEL", "INFO"),
+    },
+}
+
 # Load local settings file, if it exists
 try:
     from .local_settings import *

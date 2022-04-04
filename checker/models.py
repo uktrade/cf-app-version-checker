@@ -3,7 +3,6 @@ from django.db import models
 import logging
 
 log = logging.getLogger(__name__)
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 class PipelineApp(models.Model):
     scan_start_time = models.DateTimeField()
