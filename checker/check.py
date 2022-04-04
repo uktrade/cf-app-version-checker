@@ -149,18 +149,18 @@ def run_check():
         try:
             pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_author", pipeline_repo_primary_branch_head_commit.author.login)
         except AttributeError:
-            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_author", "N/A", settings.LOG_LEVEL["WARNING"])
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_author", "N/A", logging.WARNING)
             log.warn("Author cannot be read")
         except Exception as ex:
-            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_author", "N/A", settings.LOG_LEVEL["ERROR"])
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_author", "N/A", logging.ERROR)
             log.error("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
         try:
             pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_committer", pipeline_repo_primary_branch_head_commit.committer.login)
         except AttributeError:
-            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", settings.LOG_LEVEL["WARNING"])
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", logging.WARNING)
             log.warn("Committer cannot be read")
         except Exception as ex:
-            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", settings.LOG_LEVEL["ERROR"])
+            pipeline_app.set_attribute("scm_repo_primary_branch_head_commit_committer", "N/A", logging.ERROR)
             log.error("Exception: {0} {1!r}".format(type(ex).__name__, ex.args))
 
         pipeline_app.save()
