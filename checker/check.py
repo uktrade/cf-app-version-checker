@@ -232,7 +232,6 @@ def run_check():
                 pipeline_env.set_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, pipeline_app.config_filename)
                 merge_base_commit=pipeline_repo.get_commit(pipeline_env.git_compare_merge_base_commit)
                 pipeline_env.set_attribute("git_compare_merge_base_commit_date", datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT), pipeline_app.config_filename)
-                pipeline_env.set_attribute("git_compare_merge_base_commit", cf_compare.merge_base_commit.sha, pipeline_app.config_filename)
 
                 drift_time_merge_base=pipeline_env.git_compare_merge_base_commit_date-pipeline_app.scm_repo_primary_branch_head_commit_date
                 pipeline_env.set_attribute("drift_time_merge_base", drift_time_merge_base, pipeline_app.config_filename)
