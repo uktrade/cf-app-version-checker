@@ -220,7 +220,6 @@ def run_check():
                 pipeline_env.set_attribute("cf_commit_date", datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT), pipeline_app.config_filename)
                 pipeline_env.set_attribute("cf_commit_author", cf_commit.author.login, pipeline_app.config_filename)
                 pipeline_env.set_attribute("cf_commit_count", pipeline_repo.get_commits(pipeline_env.cf_app_git_commit).totalCount, pipeline_app.config_filename)
-                pipeline_env.set_attribute("cf_commit_author", cf_commit.author.login, pipeline_app.config_filename)
 
                 # Calculate "simple" drift days - between head commit date and CF commit date
                 drift_time_simple = pipeline_env.cf_commit_date-pipeline_app.scm_repo_primary_branch_head_commit_date
