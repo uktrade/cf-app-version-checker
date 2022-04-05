@@ -22,22 +22,6 @@ class PipelineApp(models.Model):
     scm_repo_primary_branch_head_commit_author = models.CharField(max_length=64)
     scm_repo_primary_branch_head_commit_committer = models.CharField(max_length=64)
 
-    def set_attribute(self, attribute, value, log_level=20):
-        setattr(self, attribute, value)
-        log.log(log_level,
-            f"{self.config_filename} - {attribute} : {getattr(self, attribute)}"
-        )
-
-    def log_setattr(func):
-        def wrapper(*args, **kwargs):
-            func(*args, **kwargs)
-            if args[2] is not None and type(args[2]) is not models.base.ModelState and ( not (isinstance(args[2], str) and len(args[2]) == 0) ):
-                log.info(f"Setting App attribute: {args[1]} = {args[2]}")
-        return wrapper
-
-    @log_setattr
-    def __setattr__(self, *args, **kwargs):
-        super().__setattr__(*args, **kwargs)
 
 class PipelineEnv(models.Model):
     config_id_fk = models.ForeignKey(PipelineApp, to_field='id', on_delete=models.CASCADE)
@@ -62,20 +46,3 @@ class PipelineEnv(models.Model):
     git_compare_merge_base_commit_date = models.DateTimeField(null=True, blank=True)
     drift_time_merge_base = models.DurationField(null=True, blank=True)
     log_message = models.CharField(max_length=255)
-
-    def set_attribute(self, attribute, value, config_filename, log_level=20):
-        setattr(self, attribute, value)
-        log.log(log_level,
-            f"{config_filename} - {self.config_env} - {attribute} : {getattr(self, attribute)}"
-        )
-
-    def log_setattr(func):
-        def wrapper(*args, **kwargs):
-            func(*args, **kwargs)
-            if args[2] is not None and type(args[2]) is not models.base.ModelState and ( not (isinstance(args[2], str) and len(args[2]) == 0) ):
-                log.info(f"Setting Env attribute: {args[1]} = {args[2]}")
-        return wrapper
-
-    @log_setattr
-    def __setattr__(self, *args, **kwargs):
-        super().__setattr__(*args, **kwargs)
