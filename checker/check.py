@@ -30,13 +30,6 @@ def get_app_config_yaml(repo, config_file):
     return config_yaml
 
 
-def get_config_environment_names(config_yaml):
-    environments = []
-    for environment_yaml in config_yaml["environments"]:
-        environments.append(environment_yaml["environment"])
-    return environments
-
-
 def record_json(record):
     record_dict = {}
     for field in record._meta.get_fields():
