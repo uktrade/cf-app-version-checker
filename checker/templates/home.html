@@ -43,11 +43,11 @@
     {% else %}
     <tr>
     {% endif %}
-        <td>{{ pipeline_env.config_id_fk.id }}</td>
-        <td>{{ pipeline_env.config_id_fk.config_filename }}</td>
+        <td>{{ pipeline_env.pipeline_app_fk.id }}</td>
+        <td>{{ pipeline_env.pipeline_app_fk.config_filename }}</td>
         <td>{{ pipeline_env.id }}</td>
         <td>{{ pipeline_env.config_env }}</td>
-        <td>{{ pipeline_env.config_id_fk.scm_repo_primary_branch_name }}</td>
+        <td>{{ pipeline_env.pipeline_app_fk.scm_repo_primary_branch_name }}</td>
         <td>{{ pipeline_env.cf_full_name }}</td>
         <td>{{ pipeline_env.cf_app_git_branch }}</td>
         <td>{{ pipeline_env.cf_app_git_commit }}</td>

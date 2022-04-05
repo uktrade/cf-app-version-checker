@@ -133,7 +133,7 @@ def run_check():
         for environment_yaml in pipeline_app.config["environments"]:
             log.info(f"{pipeline_file} - Processing environment '{environment_yaml['environment']}'")
             pipeline_env = PipelineEnv()
-            setattr(pipeline_env, "config_id_fk", pipeline_app)
+            setattr(pipeline_env, "pipeline_app_fk", pipeline_app)
             setattr(pipeline_env, "config_env", environment_yaml["environment"])
             setattr(pipeline_env, "cf_app_type", environment_yaml["type"])
             if pipeline_env.cf_app_type != "gds":

@@ -24,7 +24,7 @@ class PipelineApp(models.Model):
 
 
 class PipelineEnv(models.Model):
-    config_id_fk = models.ForeignKey(PipelineApp, to_field='id', on_delete=models.CASCADE)
+    pipeline_app_fk = models.ForeignKey(PipelineApp, to_field='id', on_delete=models.CASCADE)
     config_env = models.CharField(max_length=64)
     cf_full_name = models.CharField(max_length=255)
     cf_app_type = models.CharField(max_length=32)
