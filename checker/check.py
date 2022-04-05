@@ -42,7 +42,7 @@ def write_record(record):
     try:
         record.save()
     except:
-        log.error(f"Error saving record id {record.id}")
+        log.error(f"Error saving record (id={record.id})")
         return
     log.debug(record_json(record))
 
