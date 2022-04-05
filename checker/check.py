@@ -172,14 +172,14 @@ def run_check():
             setattr(pipeline_env, "cf_app_name", pipeline_env.cf_full_name.split("/")[2])
             for cf_apps in cf.v3.apps.list(names=pipeline_env.cf_app_name, space_guids=pipeline_env.cf_space_guid, organization_guids=pipeline_env.cf_org_guid):
                 setattr(pipeline_env, "cf_app_guid", cf_apps["guid"])
-            
+
             # App GUID validation
             if not pipeline_env.cf_app_guid:
                 pipeline_env.log_message = f"Cannot read app '{pipeline_env.cf_app_name}' with guid '{pipeline_env.cf_app_guid}'"
                 log.error(pipeline_env.log_message)
                 write_record(pipeline_env)
                 continue
-            
+
             # Get app environment configuration
             cf_app_env = cf.v3.apps.get_env(application_guid=pipeline_env.cf_app_guid)
             try:
