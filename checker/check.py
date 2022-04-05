@@ -116,7 +116,7 @@ def run_check():
 
         # Read pipeline app SCM repo primary branch head commit
         pipeline_repo_primary_branch_head_commit = pipeline_repo.get_commit(pipeline_app.scm_repo_primary_branch_head_commit_sha)
-        setattr(pipeline_app, "scm_repo_primary_branch_head_commit_date", datetime.strptime(pipeline_repo_primary_branch_head_commit.last_modified, settings.GIT_DATE_FORMAT))
+        setattr(pipeline_app, "scm_repo_primary_branch_head_commit_date", datetime.strptime(pipeline_repo_primary_branch_head_commit.last_modified, settings.GIT_RESPONSE_DATE_FORMAT))
         try:
             setattr(pipeline_app, "scm_repo_primary_branch_head_commit_author", pipeline_repo_primary_branch_head_commit.author.login)
         except AttributeError:
@@ -194,7 +194,7 @@ def run_check():
             try:
                 # Get commit details of CF commit sha
                 cf_commit = pipeline_repo.get_commit(pipeline_env.cf_app_git_commit)
-                setattr(pipeline_env, "cf_commit_date", datetime.strptime(cf_commit.last_modified, settings.GIT_DATE_FORMAT))
+                setattr(pipeline_env, "cf_commit_date", datetime.strptime(cf_commit.last_modified, settings.GIT_RESPONSE_DATE_FORMAT))
                 setattr(pipeline_env, "cf_commit_author", cf_commit.author.login)
                 setattr(pipeline_env, "cf_commit_count", pipeline_repo.get_commits(pipeline_env.cf_app_git_commit).totalCount)
             except:
@@ -213,7 +213,7 @@ def run_check():
             setattr(pipeline_env, "git_compare_behind_by", cf_compare.behind_by)
             setattr(pipeline_env, "git_compare_merge_base_commit", cf_compare.merge_base_commit.sha)
             merge_base_commit = pipeline_repo.get_commit(pipeline_env.git_compare_merge_base_commit)
-            setattr(pipeline_env, "git_compare_merge_base_commit_date", datetime.strptime(merge_base_commit.last_modified, settings.GIT_DATE_FORMAT))
+            setattr(pipeline_env, "git_compare_merge_base_commit_date", datetime.strptime(merge_base_commit.last_modified, settings.GIT_RESPONSE_DATE_FORMAT))
             drift_time_merge_base = pipeline_env.git_compare_merge_base_commit_date - pipeline_app.scm_repo_primary_branch_head_commit_date
             setattr(pipeline_env, "drift_time_merge_base", drift_time_merge_base)
 
