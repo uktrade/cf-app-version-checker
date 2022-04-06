@@ -39,12 +39,13 @@ def record_json(record):
 
 
 def write_record(record):
+    log.info(record_json(record))
     try:
         record.save()
     except:
-        log.error(f"Error saving record (id={record.id})")
-        return
-    log.debug(record_json(record))
+        error_message = f"Error saving record (pipeline={record.config_filename})"
+        raise Exception(error_message)
+    return record.id
 
 
 def run_check():
