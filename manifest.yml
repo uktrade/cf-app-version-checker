@@ -1,0 +1,7 @@
+--- 
+applications: 
+  - name: cf-app-version-checker
+    memory: 1G
+    disk_quota: 2G
+    buildpack: python_buildpack
+    command: python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT
