@@ -156,4 +156,3 @@ CF_PROXY = os.environ.get("CF_PROXY", "")
 GIT_CLEANUP_LIST = ["git@github.com:","https://github.com/",".git"]
 GIT_RESPONSE_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %Z"
 GIT_PIPELINE_REPO = os.environ.get("GIT_PIPELINE_REPO", "")
-CSV_OUTPUT_FILENAME = os.environ.get("CSV_OUTPUT_FILENAME", "output.csv")
