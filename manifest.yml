@@ -5,3 +5,5 @@ applications:
     disk_quota: 2G
     buildpack: python_buildpack
     command: python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT
+    services:
+    - cf-app-version-checker-db
