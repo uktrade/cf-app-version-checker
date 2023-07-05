@@ -6,7 +6,7 @@ authors = ["gareth-e"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-Django = "^4.1.7"
+Django = "^4.1.10"
 PyGithub = "^1.55"
 cloudfoundry-client = "^1.30.0"
 psycopg2 = "^2.9.3"
